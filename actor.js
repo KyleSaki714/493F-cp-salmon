@@ -5,13 +5,15 @@ const STANDSTILL_VALUE = 0.1;
 class Actor extends Shape {
   constructor(xpos, ypos, 
               hitboxHeight, hitboxWidth, 
-              fillColor, moveSpeed) {
+              fillColor, moveSpeed, rotateSpeed) {
     super(xpos, ypos, hitboxHeight, hitboxWidth, fillColor);
     this.x = xpos;
     this.y = ypos;
     this.xvel = 0;
     this.yvel = 0;
     this.moveSpeed = moveSpeed;
+    this.rotateSpeed = rotateSpeed;
+    this.currentRotation = 0;
   }
 
   resetPosition() {
@@ -51,22 +53,35 @@ class Actor extends Shape {
     this.yvel += vel;
   }
   
+  rotateCw() {
+    this.currentRotation += this.rotateSpeed;
+  }
+  
+  rotateCcw() {
+    this.currentRotation -= this.rotateSpeed;
+  }
+  
   draw() {
     push();
+    fill(this.fillColor);
+    translate(this.x, this.y)
+    rect(0, 0, 10, 10);
+    // rotate(this.currentRotation);
     
     this.xvel += this.xvel / -10;
     this.yvel += this.yvel / -10;
-    console.log("xvel:"+this.xvel+" yvel:"+this.yvel);
+    // console.log("xvel:"+this.xvel+" yvel:"+this.yvel);
     if (Math.abs(this.xvel) < STANDSTILL_VALUE && Math.abs(this.yvel) < STANDSTILL_VALUE) {
       this.xvel = 0.0;
       this.yvel = 0.0;
     }
     this.x += this.xvel;
     this.y += this.yvel;
+    rotate(this.currentRotation);
+    translate(this.x, this.y);
+    // translate(this.x, this.y);
     
-    fill(this.fillColor);
-    rect(this.x, this.y, this.width, this.height);
-    // translate(this.xvel, this.yvel);
+    rect(0, 0, this.width, this.height);
 
     pop();
   }
