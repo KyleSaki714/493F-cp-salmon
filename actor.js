@@ -19,13 +19,28 @@ class Actor extends Shape {
     this.y = 50;
   }
 
-  // add val to x velocity.
+  moveLeft() {
+    this.moveX(-this.moveSpeed);
+  }
+  
+  moveRight() {
+    this.moveX(this.moveSpeed);
+  }
+
+  moveUp() {
+    this.moveY(-this.moveSpeed);
+  }
+
+  moveDown() {
+    this.moveY(this.moveSpeed);
+  }
+
   moveX(val) {
-    this.xvel += val;
+    this.x += val;
   }
   
   moveY(val) {
-    this.yvel += val;
+    this.y += val;
   }
   
   draw() {
@@ -35,14 +50,14 @@ class Actor extends Shape {
     //   this.xvel = 0;
     //   this.yvel = 0;
     // } else {
-      let yProgress = this.yvel / -10;
-      let xProgress = this.xvel / -10;
+      // let yProgress = this.yvel / -10;
+      // let xProgress = this.xvel / -10;
 
-      this.x += xProgress;
-      this.y += yProgress;
+      // this.x += xProgress;
+      // this.y += yProgress;
 
-      this.xvel += xProgress;
-      this.yvel += yProgress;
+      // this.xvel += xProgress;
+      // this.yvel += yProgress;
     // }
     
     fill(this.fillColor);

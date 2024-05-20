@@ -40,8 +40,8 @@ class Fish extends Actor {
 let fish;
 
 function setup() {
-  createCanvas(400, 400);
-  fish = new Fish(width / 2, height / 2, 15, 20, "#FA8072", 30);
+  createCanvas(1366, 768);
+  fish = new Fish(width / 2, height / 2, 15, 20, "#FA8072", 4);
 }
 
 function draw() {
@@ -49,16 +49,16 @@ function draw() {
   
   
   if (keyIsDown(LEFT_ARROW)) {
-    fish.moveX(fish.moveSpeed);
+    fish.moveLeft();
   }
   if (keyIsDown(RIGHT_ARROW)) {
-    fish.moveX(-fish.moveSpeed);
+    fish.moveRight();
   }
   if (keyIsDown(UP_ARROW)) {
-    fish.moveY(fish.moveSpeed);
+    fish.moveUp();
   }
   if (keyIsDown(DOWN_ARROW)) {
-    fish.moveY(-fish.moveSpeed);
+    fish.moveDown();
   }
   
   // "a"
