@@ -1,6 +1,6 @@
 // this code adapted from Prof. Froehlich's Cookie Monster Game: https://editor.p5js.org/jonfroehlich/sketches/oUIeXC9sS
 
-const STANDSTILL_VALUE = 0.00000000000000001;
+const STANDSTILL_VALUE = 0.1;
 
 class Actor extends Shape {
   constructor(xpos, ypos, 
@@ -43,22 +43,26 @@ class Actor extends Shape {
     this.y += val;
   }
   
+  addForceX(vel) {
+    this.xvel += vel;
+  }
+  
+  addForceY(vel) {
+    this.yvel += vel;
+  }
+  
   draw() {
     push();
     
-    // if (this.xvel < STANDSTILL_VALUE && this.yvel < STANDSTILL_VALUE) {
-    //   this.xvel = 0;
-    //   this.yvel = 0;
-    // } else {
-      // let yProgress = this.yvel / -10;
-      // let xProgress = this.xvel / -10;
-
-      // this.x += xProgress;
-      // this.y += yProgress;
-
-      // this.xvel += xProgress;
-      // this.yvel += yProgress;
-    // }
+    this.xvel += this.xvel / -10;
+    this.yvel += this.yvel / -10;
+    console.log("xvel:"+this.xvel+" yvel:"+this.yvel);
+    if (Math.abs(this.xvel) < STANDSTILL_VALUE && Math.abs(this.yvel) < STANDSTILL_VALUE) {
+      this.xvel = 0.0;
+      this.yvel = 0.0;
+    }
+    this.x += this.xvel;
+    this.y += this.yvel;
     
     fill(this.fillColor);
     rect(this.x, this.y, this.width, this.height);

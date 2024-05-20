@@ -17,22 +17,23 @@ class Fish extends Actor {
   
   swimUpLeft() {
     if (this.canSwim()) {
-      fish.moveX(fish.moveSpeed * SWIMSPEED_SIDE);
-      fish.moveY(fish.moveSpeed * SWIMSPEED_UP);
+      fish.addForceX(-fish.moveSpeed * SWIMSPEED_SIDE);
+      fish.addForceY(-fish.moveSpeed * SWIMSPEED_UP);
       this.lastSwim = millis();
     }
   }
   
   swimUpRight() {
     if (this.canSwim()) {
-      fish.moveX(-fish.moveSpeed * SWIMSPEED_SIDE);
-      fish.moveY(fish.moveSpeed * SWIMSPEED_UP);
+      fish.addForceX(fish.moveSpeed * SWIMSPEED_SIDE);
+      fish.addForceY(-fish.moveSpeed * SWIMSPEED_UP);
       this.lastSwim = millis();
     }
   }
   
   // prevent the fish from swimming until it rests
   canSwim() {
+    // return true;
     return (millis() - this.lastSwim) > this.swimCooldown;
   }
 }
@@ -40,8 +41,9 @@ class Fish extends Actor {
 let fish;
 
 function setup() {
-  createCanvas(1366, 768);
-  fish = new Fish(width / 2, height / 2, 15, 20, "#FA8072", 4);
+  // createCanvas(1366, 768);
+  createCanvas(400, 800);
+  fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10);
 }
 
 function draw() {
@@ -72,5 +74,5 @@ function draw() {
   
   
   fish.draw();
-  console.log(fish.xvel);
+  // console.log(fish.xvel);
 }
