@@ -1,59 +1,62 @@
 // this code adapted from Prof. Froehlich's Cookie Monster Game: https://editor.p5js.org/jonfroehlich/sketches/oUIeXC9sS
 
-const SWIMSPEED_SIDE = 0.25;
-const SWIMSPEED_UP = 0.6;
-
-class Fish extends Ship {
-
-  constructor() {
-    super(10);
-    this._swimming = false;
-    this._lastSwimTime = 0;
-    this._swimCooldown = 1000;
-  }
-  
-  swim() {
-    this.boosting(true);
-    this._lastSwimTime = millis();
-  }
-  
-  stopSwim() {
-    this.boosting(false);
-  }
-  
-  // prevent the fish from swimming until it rests
-  canSwim() {
-    return (millis() - this._lastSwimTime) > this._swimCooldown;
-  }
-}
-
+let backdrop;
 let fish;
 
+function preload() {
+  backdrop = loadImage("resources/testriver.png");
+}
+
 function setup() {
-  // createCanvas(1366, 768);
+  createCanvas(1080, 720);
   // angleMode(DEGREES);
   rectMode(CENTER);
-  createCanvas(400, 800);
+  // createCanvas(1600, 900);
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish();
 }
 
+let bgx = 0;
+let bgy = 0;
+
 function draw() {
   background("lightblue");
   
   input();
+  push();
+  // scale(2);
+  image(backdrop, bgx, bgy);
+  // console.log(color(backdrop.get(mouseX, mouseY)));
+  pop();
+  
+  // console.log(fishCurrentColColor)
+  if (fish.checkColorCollisionGrass()) {
+    console.log("Bonk");
+    fish.stop();
+    fish.backup();
+  }
 
   fish.render();
   fish.turn();
   fish.update();
-  
-  // fish.draw();
-  // console.log(fish.xvel);
 }
 
 function input() {
-        
+  
+  if (keyIsDown(LEFT_ARROW)) {
+    bgx -= 5;
+  }
+  if (keyIsDown(RIGHT_ARROW)) {
+    bgx += 5;
+  }
+  if (keyIsDown(UP_ARROW)) {
+    bgy -= 5;
+  }
+  if (keyIsDown(DOWN_ARROW)) {
+    bgy += 5;
+  }
+
   // "d"
   if (keyIsDown(68)) {
     fish.setRotation(0.1)

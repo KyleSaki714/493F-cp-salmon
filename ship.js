@@ -4,13 +4,15 @@
  */
 
 class Ship {
-    constructor(size) {
-      this.pos = createVector(width / 2, height /2);
+    constructor(size, color) {
+      this.pos = createVector(width * 0.1, height /2);
       this.r = size;
       this.heading = 0; // angle
       this.rotation = 0;
       this.vel = createVector(0,0);
       this.isBoosting = false;
+      this.boostRate = 0.7;
+      this.color = color;
     }
     
     update() {
@@ -33,8 +35,14 @@ class Ship {
       // fromAngle() creates a vector from an angle
       // this gets us vector in the direction of that heading
       let force = p5.Vector.fromAngle(this.heading);
-      force.mult(0.99);
+      force.mult(this.boostRate);
       this.vel.add(force);
+    }
+
+    backup() {
+        let force = p5.Vector.fromAngle(this.heading);
+        force.mult(-0.1);
+        this.vel.add(force);
     }
     
     render() {
@@ -43,6 +51,7 @@ class Ship {
       rotate(this.heading + PI / 2);
       // noFill();
       // stroke(255);
+      fill(this.color);
       triangle(-this.r, this.r, this.r, this.r, 0, -this.r);
       pop()
     }
@@ -54,5 +63,11 @@ class Ship {
     // angle: amoutn to turn by
     turn() {
       this.heading += this.rotation;
+    }
+
+    // stops the ship where it is
+    stop() {
+      this.vel = createVector(0,0);
+      this.boosting(false);
     }
   }
