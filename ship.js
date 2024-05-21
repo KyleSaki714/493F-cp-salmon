@@ -4,9 +4,9 @@
  */
 
 class Ship {
-    constructor() {
+    constructor(size) {
       this.pos = createVector(width / 2, height /2);
-      this.r = 10;
+      this.r = size;
       this.heading = 0; // angle
       this.rotation = 0;
       this.vel = createVector(0,0);
@@ -21,7 +21,7 @@ class Ship {
       
       // reduces the magnitude of velocity (speed) by
       // 5 percent every frame (to get it to look smooth!)
-      this.vel.mult(0.95);
+      this.vel.mult(0.99);
     }
     
     boosting(b) {
