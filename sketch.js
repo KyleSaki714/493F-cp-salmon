@@ -3,7 +3,7 @@
 const SWIMSPEED_SIDE = 0.25;
 const SWIMSPEED_UP = 0.6;
 
-class Fish extends Actor {
+class Fish extends Ship {
   /**
    * 
    * @param {Number} xpos 
@@ -14,12 +14,7 @@ class Fish extends Actor {
    * @param {Number} moveSpeed 
    * @param {Number} rotateSpeed 
    */
-  constructor(xpos, ypos, 
-              hitboxHeight, hitboxWidth, 
-              fillColor, moveSpeed, rotateSpeed) {
-    super(xpos, ypos, 
-          hitboxHeight, hitboxWidth, 
-          fillColor, moveSpeed, rotateSpeed);
+  constructor() {
     this._swimming = false;
     this._lastSwimTime = 0;
     this._swimCooldown = 250;
@@ -55,48 +50,47 @@ class Fish extends Actor {
   }
 }
 
-let fish;
+let ship;
 
 function setup() {
   // createCanvas(1366, 768);
-  angleMode(DEGREES);
+  // angleMode(DEGREES);
   rectMode(CENTER);
   createCanvas(400, 800);
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
-  fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
+  // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
+  ship = new Ship();
 }
 
 function draw() {
   background("lightblue");
   
+  input();
+
+  ship.render();
+  ship.turn();
+  ship.update();
   
-  if (keyIsDown(LEFT_ARROW)) {
-    fish.moveLeft();
-  }
-  if (keyIsDown(RIGHT_ARROW)) {
-    fish.moveRight();
-  }
-  if (keyIsDown(UP_ARROW)) {
-    fish.moveUp();
-  }
-  if (keyIsDown(DOWN_ARROW)) {
-    fish.moveDown();
-  }
-  
-  // "a"
-  if (keyIsDown(65)) {
-    fish.rotateCcw();
-  }
+  // fish.draw();
+  // console.log(fish.xvel);
+}
+
+function input() {
+        
   // "d"
   if (keyIsDown(68)) {
-    fish.rotateCw()
+    ship.setRotation(0.1)
+    // "a"
+  } else if (keyIsDown(65)) {
+    ship.setRotation(-0.1)
+  } else {
+    ship.setRotation(0);
   }
+  
   // "w"
-  if (keyIsDown(87) && fish.canSwim()) {
-    fish.swim();
+  if (keyIsDown(87)) {
+    ship.boosting(true);
+  } else {
+    ship.boosting(false);
   }
-  
-  
-  fish.draw();
-  // console.log(fish.xvel);
 }
