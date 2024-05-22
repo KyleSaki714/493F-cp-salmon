@@ -13,7 +13,8 @@ let _isTurningKeys = false; // if the a and d keys are being used to turn.
 // beholder.js
 let marker0;
 let marker1;
-let _lastPosHammer; // marker 0
+let _lastPosHammer; // marker 0 position
+let _lastRotHammer; // marker 0 rotation. THIS IS IN RADIANS
 let _lastPosBrush; // marker 1
 
 let backdropIm;
@@ -57,7 +58,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.75; // default -0.5?
+  let scrollval = -0.5; // default -0.5?
   
   // stop scrolling river
   if (_river.pos.x < (-_river.backdrop.width + width)) {
@@ -76,6 +77,8 @@ function draw() {
   if (marker0.present) {
     let pos = p5beholder.cameraToCanvasVector(marker0.center);
     _lastPosHammer = pos;
+    let rot = marker0.rotation;
+    _lastRotHammer = rot;
   }
   if (marker1.present) {
     let pos = p5beholder.cameraToCanvasVector(marker1.center);
@@ -85,7 +88,9 @@ function draw() {
   // draw sttuff with the marker positions
   push()
   fill("brown")
-  rect(_lastPosHammer.x, _lastPosHammer.y, 10, 10);
+  translate(_lastPosHammer.x, _lastPosHammer.y); 
+  rotate(_lastRotHammer);
+  rect(0, 0, 10, 10);
   pop()
 
   push()
