@@ -34,7 +34,7 @@ function setup() {
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish(10, color("salmon"), createVector(27, 92));
-  pollution[polluteNum] = new Pollution(100, 100, 80); // array of pollution blobs 
+  pollution[polluteNum] = new Pollution(500, 100, 80); // array of pollution blobs 
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -81,22 +81,24 @@ function draw() {
   if (marker0.present) {
     let pos = p5beholder.cameraToCanvasVector(marker0.center);
     _lastPosHammer = pos;
+    _lastPosHammer.x = width - pos.x;
   }
   if (marker1.present) {
     let pos = p5beholder.cameraToCanvasVector(marker1.center);
     _lastPosBrush = pos;
+    _lastPosBrush.x = width - pos.x;
   }
 
   // draw sttuff with the marker positions
-  push()
-  fill("brown")
+  push();
+  fill("brown");
   rect(_lastPosHammer.x, _lastPosHammer.y, 10, 10);
-  pop()
+  pop();
 
-  push()
-  fill("white")
+  push();
+  fill("white");
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
-  pop()
+  pop();
 
 
   // console.log(fishCurrentColColor)
@@ -105,7 +107,7 @@ function draw() {
     fish.stop();
     fish.backup();
   }
-  pollution.draw();
+  pollution[polluteNum].draw();
   
   fish.checkOOB();
   fish.render();
@@ -179,7 +181,12 @@ function onSerialDataReceived(eventSender, newData) {
   if (newData.startsWith("Shake")) {
     // separate out the shake value
     let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
-    pollution.clean_particle(shakeVal);
+    if (pollution[polluteNum].brush_collide(_lastPosBrush)) {
+      console.log("should attempt to clean!")
+      pollution[polluteNum].clean_particle(shakeVal);
+    } else {
+      console.log("fail");
+    }
   }
   //console.log("onSerialDataReceived", newData);
    else if(!newData.startsWith("#")){

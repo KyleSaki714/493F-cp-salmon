@@ -6,23 +6,25 @@ class Shape {
     this.ypos = ypos;
     this.width = width;
     this.height = height;
-    this.fillColor = color(fillColor);
+    if (fillColor != undefined) {
+      this.fillColor = color(fillColor);
+    }
   }
 
   getLeft() {
-    return this.x;
+    return this.xpos;
   }
 
   getRight() {
-    return this.x + this.width;
+    return this.xpos + this.width;
   }
 
   getBottom() {
-    return this.y + this.height;
+    return this.ypos + this.height;
   }
 
   getTop() {
-    return this.y;
+    return this.ypos;
   }
   
   scale(fraction){
