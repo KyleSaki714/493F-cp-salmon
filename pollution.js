@@ -33,8 +33,16 @@ class Pollution {
     }
   }
 
+  scrollX(val) {
+    this.x += val;
+     for (let p = 0; p < this.num_particles; p++) {
+      this.particles[p].scrollX(val);
+     }
+  }
+
   clean_particle(threshold) {
     // if threshold increases, likelihood of deleting particle higher since math.random generates with equal prob
+    console.log(threshold);
     if (Math.random() < threshold) {
       this.num_particles--; // erase a particle
     }
