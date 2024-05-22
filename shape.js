@@ -86,4 +86,8 @@ class Circle extends Shape {
     ellipse(this.xpos, this.ypos, this.width);
     pop();
   }
+
+  scrollX(val) {
+    this.xpos += val;
+  }
 }
