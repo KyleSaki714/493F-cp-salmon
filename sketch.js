@@ -15,21 +15,11 @@ let _lastPosBrush; // marker 1
 let backdropIm;
 let _backdrop;
 let fish;
-let pollution;
+let pollution = [];
+let polluteNum = 0;
 
-<<<<<<< HEAD
-function setup() {
-  // createCanvas(1366, 768);
-  angleMode(DEGREES);
-  rectMode(CENTER);
-  createCanvas(400, 800);
-  // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
-  fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
-  pollution = new Pollution(100, 100, 80); // array of circles
-=======
 function preload() {
   backdropIm = loadImage("resources/testriver_3012_480_scrolling.png");
->>>>>>> 78ba174b502f09841399f9f0d60bfd5291602d92
 }
 
 function setup() {
@@ -40,6 +30,8 @@ function setup() {
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish(10, color("salmon"), createVector(27, 92));
+  pollution[polluteNum] = new Pollution(100, 100, 80); // array of pollution blobs 
+
   _backdrop = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
   _lastPosHammer = createVector(-100, -100);
@@ -73,6 +65,7 @@ function draw() {
   _backdrop.render();
 
   fish.scrollX(scrollval);
+  pollution[0].scrollX(scrollval);
 
   // update marker positions
   if (marker0.present) {
@@ -102,6 +95,7 @@ function draw() {
     fish.stop();
     fish.backup();
   }
+  pollution.draw();
   
   fish.checkOOB();
   fish.render();
@@ -142,7 +136,6 @@ function input() {
       fish.stopSwim();
     }
   }
-  pollution.draw();
 }
 
 function onSerialErrorOccurred(eventSender, error) {
@@ -158,9 +151,14 @@ function onSerialConnectionClosed(eventSender) {
 }
 
 function onSerialDataReceived(eventSender, newData) {
+  // TODO: first check location of aruco...
+  if (newData.startsWith("Shake")) {
+    // separate out the shake value
+    let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
+    pollution.clean_particle(shakeVal);
+  }
   //console.log("onSerialDataReceived", newData);
-
-  if(!newData.startsWith("#")){
+   else if(!newData.startsWith("#")){
     // Clear screen
 //     if(newData.toLowerCase().startsWith("clear")) {
 //       background(127);
@@ -232,10 +230,8 @@ function onSerialDataReceived(eventSender, newData) {
   }
 }
 
-
 function openConnectSerialDialog() {
   if (!serial.isOpen()) {
     serial.connectAndOpen(null, serialOptions);
   }
->>>>>>> 78ba174b502f09841399f9f0d60bfd5291602d92
 }
