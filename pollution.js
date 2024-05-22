@@ -11,7 +11,7 @@ class Pollution extends Shape {
   constructor(x, y, w) {
     super(x, y, w, w);
     // random num of particles within radius
-    this.num_particles = int(random(5, 15));
+    this.num_particles = int(random(5, 10));
     this.particles = [];
     print(this.num_particles);
     colorMode(HSB);

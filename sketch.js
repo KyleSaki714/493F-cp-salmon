@@ -61,7 +61,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.75; // default -0.5?
+  let scrollval = -0.5; // default -0.5?
   
   // stop scrolling river
   if (_river.pos.x < (-_river.backdrop.width + width)) {
@@ -100,10 +100,9 @@ function draw() {
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
   pop();
 
-
+  pollution[polluteNum].draw();
   // console.log(fishCurrentColColor)
   if (fish.checkColorCollisionGrass()) {
-  pollution[polluteNum].draw();
     console.log("Bonk");
 
     // Stuck between edge and grass
