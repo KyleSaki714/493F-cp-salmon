@@ -4,7 +4,11 @@
 let serialOptions = { baudRate: 115200  };
 let serial;
 let turnAngle;
-let prevXNegative = false;
+let _prevYPolarity = false; // if true, last X axis value was positive. otherwise negative 
+let _lastSwimAngle = 0; // previous angle a swim was triggered. initially set to half distance to get that semi circle motion.
+const SWIM_DIST_THRESH = 2; // how much salmon controller needs to turn to execute a swim. 
+let _isTurningMotion = false; // if the salmon controller is being used to turn.
+let _isTurningKeys = false; // if the a and d keys are being used to turn.
 
 // beholder.js
 let marker0;
@@ -13,13 +17,13 @@ let _lastPosHammer; // marker 0
 let _lastPosBrush; // marker 1
 
 let backdropIm;
-let _backdrop;
+let _river;
 let fish;
 let pollution = [];
 let polluteNum = 0;
 
 function preload() {
-  backdropIm = loadImage("resources/testriver_3012_480_scrolling.png");
+  backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
 }
 
 function setup() {
@@ -32,7 +36,7 @@ function setup() {
   fish = new Fish(10, color("salmon"), createVector(27, 92));
   pollution[polluteNum] = new Pollution(100, 100, 80); // array of pollution blobs 
 
-  _backdrop = new Backdrop(backdropIm);
+  _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
   _lastPosHammer = createVector(-100, -100);
 
@@ -51,18 +55,24 @@ function draw() {
   // beholder updates before all code in draw()
   marker0 = p5beholder.getMarker(0);
   marker1 = p5beholder.getMarker(1);
-
+  
   clear();
   background("lightblue");
-  
+    
   input();
 
-  const scrollval = -0.5;
+  let scrollval = -0.5;
   
-  _backdrop.scrollX(scrollval);  
-  // console.log(_backdrop.pos.x)
+  // stop scrolling river
+  if (_river.pos.x < (-_river.width + width)) {
+    // this.pos = (-this.backdrop.width + width);
+    scrollval = 0;
+  }
+  
+  _river.scrollX(scrollval);  
+  // console.log(_river.pos.x)
   // draw background before fish, for collision colors
-  _backdrop.render();
+  _river.render();
 
   fish.scrollX(scrollval);
   pollution[0].scrollX(scrollval);
@@ -101,30 +111,44 @@ function draw() {
   fish.render();
   fish.turn();
   fish.update();
+  
+  // text(10, 10, frameRate());
+  // console.log(Math.floor(frameRate()));
 }
 
 function input() {
   
+  // "r"
+  if (keyIsDown(82)) {
+    fish.pos = createVector(width * 0.2, height / 2);
+  }
+  
   if (keyIsDown(LEFT_ARROW)) {
-    _backdrop.scrollX(-5);
+    _river.scrollX(-5);
   }
   if (keyIsDown(RIGHT_ARROW)) {
-    _backdrop.scrollX(5);
+    _river.scrollX(5);
   }
   if (keyIsDown(UP_ARROW)) {
-    _backdrop.scrollY(-5);
+    _river.scrollY(-5);
   }
   if (keyIsDown(DOWN_ARROW)) {
-    _backdrop.scrollY(5);
+    _river.scrollY(5);
   }
 
   // "d"
   if (keyIsDown(68)) {
+    _isTurningKeys = true;
     fish.setRotation(0.1)
     // "a"
   } else if (keyIsDown(65)) {
+    _isTurningKeys = true;
     fish.setRotation(-0.1)
   } else {
+    _isTurningKeys = false;
+  }
+  
+  if (!_isTurningMotion && !_isTurningKeys) {
     fish.setRotation(0);
   }
   
@@ -174,57 +198,87 @@ function onSerialDataReceived(eventSender, newData) {
       // Parse x location (normalized between 0 and 1)
       let strBrushXFraction = newData.substring(startIndex, endIndex).trim();
       let xFraction = parseFloat(strBrushXFraction);
-    
+      // console.log("x: " + xFraction);
+      
       // Parse y location (normalized between 0 and 1)
       startIndex = endIndex + 1;
       endIndex = newData.length;
       let strBrushYFraction = newData.substring(startIndex, endIndex).trim();
       let yFraction = parseFloat(strBrushYFraction);
-      // if (yFraction > 0) {
-      //   bgy += 5;
-      // }
-      //console.log(yFraction);
+
+      // console.log("y: " + yFraction);
       turnAngle = newData.substring(startIndex, endIndex).trim();
       const angleArr = turnAngle.split(",");
-      const angle = parseFloat(angleArr[1]);
-      // console.log(angle);
+      const zFraction = parseFloat(angleArr[1]);
+      // console.log("z: " + zFraction);
+      // console.log(zFraction);
 
       //turns
-      if (angle > 2.0) {
-        fish.setRotation(0.01)
-      } else if (angle < -2.0) {
-        fish.setRotation(-0.01)
-      }
-      // make rotation a bool instead
-      // } else {
-      //   fish.setRotation(0);
-      // }
-      if (prevXNegative && xFraction > 0) {
-        //bgy += 5;
-        if (fish.canSwim()) {
-          console.log("swimming");
-          fish.swim();
-        } else {
-          console.log("not swimming");
-          fish.stopSwim();
-        }
-        //prevXNegative = false;
-      }
-      else if(!prevXNegative && xFraction < 0) {
-        //bgy += 5;
-        if (fish.canSwim()) {
-          fish.swim();
-        } else {
-          fish.stopSwim();
-        }
-        //prevXNegative = true;
+      let rotValue = (xFraction / 9.8) * 0.1;
+      if (xFraction > 5.0) {
+        _isTurningMotion = true;
+        fish.setRotation(rotValue)
+      } else if (xFraction < -5.0) {
+        _isTurningMotion = true;
+        fish.setRotation(rotValue)
+      } else {
+        _isTurningMotion = false;
       }
       
-      if (xFraction > 0) {
-        prevXNegative = false;
-      } else if (xFraction < 0) {
-        prevXNegative = true;
+      // if (_prevYPolarity && xFraction > 0) {
+      //   //bgy += 5;
+      //   if (fish.canSwim()) {
+      //     // console.log("swimming");
+      //     fish.swim();
+      //   } else {
+      //     // console.log("not swimming");
+      //     fish.stopSwim();
+      //   }
+      //   //_prevYPolarity = false;
+      // }
+      // else if(!_prevYPolarity && xFraction < 0) {
+      //   //bgy += 5;
+      //   if (fish.canSwim()) {
+      //     fish.swim();
+      //   } else {
+      //     fish.stopSwim();
+      //   }
+      //   //_prevYPolarity = true;
+      // }
+      
+      // swimming
+      let distFromLastSwim = Math.abs(yFraction - _lastSwimAngle);
+      if (distFromLastSwim > SWIM_DIST_THRESH) {
+        if (fish.canSwim()) {
+          fish.swim();
+          console.log("Swim");
+        }
+        _lastSwimAngle = yFraction;
+      } else {
+        fish.stopSwim();  
       }
+      
+      // let curYpolarity = yFraction > 0;
+      // if (curYpolarity != _prevYPolarity) {
+      //   if (fish.canSwim()) {
+      //     fish.swim();
+      //     // console.log("Swim" + fish.pos);
+      //   }
+      // } else {
+      //   fish.stopSwim();
+      // }
+      
+      
+      // toggle polarity 
+      // if (yFraction > 0) {
+      //   _prevYPolarity = true;
+      //   // console.log(_prevYPolarity);
+      // } else if (yFraction <= 0) {
+      //   _prevYPolarity = false;
+      //   // console.log(_prevYPolarity);
+      // }
+      
+
 
     }
   }

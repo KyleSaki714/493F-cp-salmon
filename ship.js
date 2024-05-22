@@ -7,12 +7,13 @@ class Ship {
     constructor(size, color, startingPos) {
       // this.pos = createVector(width * 0.1, height /2);
       this.pos = startingPos;
+      this.lastPos = startingPos;
       this.r = size;
       this.heading = 0; // angle
       this.rotation = 0;
       this.vel = createVector(0,0);
       this.isBoosting = false;
-      this.boostRate = 0.8; // 0.7
+      this.boostRate = 0.7; // 0.7
       this.color = color;
     }
     
@@ -21,7 +22,7 @@ class Ship {
         this.boost();
       }
       this.pos.add(this.vel);
-      
+     
       // reduces the magnitude of velocity (speed) by
       // 5 percent every frame (to get it to look smooth!)
       this.vel.mult(0.99);
@@ -44,6 +45,10 @@ class Ship {
       let force = p5.Vector.fromAngle(this.heading);
       force.mult(-this.boostRate / 2);
       this.vel.add(force);
+      // console.log(this.lastPos)
+      // let backward = this.pos.sub(this.lastPos);
+      // this.vel.add(backward);
+      // console.log(backward);
     }
     
     render() {
@@ -55,6 +60,9 @@ class Ship {
       fill(this.color);
       triangle(-this.r, this.r, this.r, this.r, 0, -this.r);
       pop()
+      
+      this.lastPos = this.pos;
+      
     }
     
     setRotation(angle) {
