@@ -6,23 +6,25 @@ class Shape {
     this.ypos = ypos;
     this.width = width;
     this.height = height;
-    this.fillColor = color(fillColor);
+    if (fillColor != undefined) {
+      this.fillColor = color(fillColor);
+    }
   }
 
   getLeft() {
-    return this.x;
+    return this.xpos;
   }
 
   getRight() {
-    return this.x + this.width;
+    return this.xpos + this.width;
   }
 
   getBottom() {
-    return this.y + this.height;
+    return this.ypos + this.height;
   }
 
   getTop() {
-    return this.y;
+    return this.ypos;
   }
   
   scale(fraction){
@@ -66,8 +68,7 @@ class Shape {
 
 class Circle extends Shape {
   constructor(x, y, diameter, fillColor) {
-    super(x, y, diameter, diameter);
-    this.fillColor = fillColor;
+    super(x, y, diameter, diameter, fillColor);
   }
 
   containsCircle(otherCircle) {
@@ -84,7 +85,11 @@ class Circle extends Shape {
     push();
     noStroke();
     fill(this.fillColor);
-    ellipse(this.x, this.y, this.width);
+    ellipse(this.xpos, this.ypos, this.width);
     pop();
+  }
+
+  scrollX(val) {
+    this.xpos += val;
   }
 }

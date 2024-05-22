@@ -20,6 +20,8 @@ let _lastPosBrush; // marker 1
 let backdropIm;
 let _river;
 let fish;
+let pollution = [];
+let polluteNum = 0;
 
 function preload() {
   backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -33,6 +35,8 @@ function setup() {
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish(10, color("salmon"), createVector(27, 92));
+  pollution[polluteNum] = new Pollution(500, 100, 80); // array of pollution blobs 
+
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
   _lastPosHammer = createVector(-100, -100);
@@ -72,6 +76,7 @@ function draw() {
   _river.render();
 
   fish.scrollX(scrollval);
+  pollution[0].scrollX(scrollval);
 
   // update marker positions
   if (marker0.present) {
@@ -79,10 +84,12 @@ function draw() {
     _lastPosHammer = pos;
     let rot = marker0.rotation;
     _lastRotHammer = rot;
+    _lastPosHammer.x = width - pos.x;
   }
   if (marker1.present) {
     let pos = p5beholder.cameraToCanvasVector(marker1.center);
     _lastPosBrush = pos;
+    _lastPosBrush.x = width - pos.x;
   }
 
   // draw sttuff with the marker positions
@@ -93,12 +100,12 @@ function draw() {
   rect(0, 0, 10, 10);
   pop()
 
-  push()
-  fill("white")
+  push();
+  fill("white");
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
-  pop()
+  pop();
 
-
+  pollution[polluteNum].draw();
   // console.log(fishCurrentColColor)
   if (fish.checkColorCollisionGrass()) {
     console.log("Bonk");
@@ -195,9 +202,19 @@ function onSerialConnectionClosed(eventSender) {
 }
 
 function onSerialDataReceived(eventSender, newData) {
+  // TODO: first check location of aruco...
+  if (newData.startsWith("Shake")) {
+    // separate out the shake value
+    let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
+    if (pollution[polluteNum].brush_collide(_lastPosBrush)) {
+      console.log("should attempt to clean!")
+      pollution[polluteNum].clean_particle(shakeVal);
+    } else {
+      console.log("fail");
+    }
+  }
   //console.log("onSerialDataReceived", newData);
-
-  if(!newData.startsWith("#")){
+   else if(!newData.startsWith("#")){
     // Clear screen
 //     if(newData.toLowerCase().startsWith("clear")) {
 //       background(127);
@@ -298,7 +315,6 @@ function onSerialDataReceived(eventSender, newData) {
     }
   }
 }
-
 
 function openConnectSerialDialog() {
   if (!serial.isOpen()) {
