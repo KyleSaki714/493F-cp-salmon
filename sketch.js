@@ -56,6 +56,7 @@ class Fish extends Actor {
 }
 
 let fish;
+let pollution;
 
 function setup() {
   // createCanvas(1366, 768);
@@ -64,6 +65,7 @@ function setup() {
   createCanvas(400, 800);
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
+  pollution = new Pollution(100, 100, 80); // array of circles
 }
 
 function draw() {
@@ -98,5 +100,7 @@ function draw() {
   
   
   fish.draw();
+  pollution.draw();
+  //circle(200, 400, 100);
   // console.log(fish.xvel);
 }
