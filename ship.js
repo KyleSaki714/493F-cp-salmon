@@ -12,7 +12,7 @@ class Ship {
       this.rotation = 0;
       this.vel = createVector(0,0);
       this.isBoosting = false;
-      this.boostRate = 0.7;
+      this.boostRate = 0.8; // 0.7
       this.color = color;
     }
     
@@ -91,7 +91,11 @@ class Ship {
       if (this.pos.y < 0) {
         this.pos.y = 0;
       }
-      this.pos.x = this.pos.x % width;
-      this.pos.y = this.pos.y % height;
+      if (this.pos.x > width) {
+        this.pos.x = width;
+      }
+      if (this.pos.y > height) {
+        this.pos.y = height;
+      }
     }
   }

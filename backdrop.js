@@ -7,6 +7,10 @@ class Backdrop {
   
   scrollX(val) {
     this.pos.x += val;
+    // stop scrolling river
+    if (this.pos.x < (-this.backdrop.width + width)) {
+      this.pos.x = (-this.backdrop.width + width);
+    }
   }
   
   scrollY(val) {
