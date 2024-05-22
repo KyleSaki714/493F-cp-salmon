@@ -2,8 +2,8 @@ const COLLISIONCOLOR_GRASS = [24, 62, 12, 255];
 
 class Fish extends Ship {
 
-    constructor() {
-      super(10, color("salmon"));
+    constructor(size, color, startingPos) {
+      super(size, color, startingPos);
       this._swimming = false;
       this._lastSwimTime = 0;
       this._swimCooldown = 750;
@@ -23,7 +23,8 @@ class Fish extends Ship {
     
     // prevent the fish from swimming until it rests
     canSwim() {
-      return (millis() - this._lastSwimTime) > this._swimCooldown;
+      return (millis() - this._lastSwimTime) > this._swimCooldown &&
+            !this.isBoosting;
     }
 
     checkColorCollisionGrass() {

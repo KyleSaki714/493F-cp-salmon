@@ -4,8 +4,9 @@
  */
 
 class Ship {
-    constructor(size, color) {
-      this.pos = createVector(width * 0.1, height /2);
+    constructor(size, color, startingPos) {
+      // this.pos = createVector(width * 0.1, height /2);
+      this.pos = startingPos;
       this.r = size;
       this.heading = 0; // angle
       this.rotation = 0;
@@ -40,9 +41,9 @@ class Ship {
     }
 
     backup() {
-        let force = p5.Vector.fromAngle(this.heading);
-        force.mult(-0.1);
-        this.vel.add(force);
+      let force = p5.Vector.fromAngle(this.heading);
+      force.mult(-this.boostRate / 2);
+      this.vel.add(force);
     }
     
     render() {
@@ -69,5 +70,28 @@ class Ship {
     stop() {
       this.vel = createVector(0,0);
       this.boosting(false);
+    }
+    
+    scrollX(val) {
+      this.pos.x += val;
+    }
+    
+    scrollY(val) {
+      this.pos.y += val;
+    }
+    
+    /**
+     * Checks if the Ship is out of the canvas, if so, 
+     * restricts it to the canvas.
+     */
+    checkOOB() {
+      if (this.pos.x < 0) {
+        this.pos.x = 0;
+      }
+      if (this.pos.y < 0) {
+        this.pos.y = 0;
+      }
+      this.pos.x = this.pos.x % width;
+      this.pos.y = this.pos.y % height;
     }
   }
