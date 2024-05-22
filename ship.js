@@ -13,7 +13,7 @@ class Ship {
       this.rotation = 0;
       this.vel = createVector(0,0);
       this.isBoosting = false;
-      this.boostRate = 0.7; // 0.7
+      this.boostRate = 2; // 0.7
       this.color = color;
     }
     
@@ -25,7 +25,7 @@ class Ship {
      
       // reduces the magnitude of velocity (speed) by
       // 5 percent every frame (to get it to look smooth!)
-      this.vel.mult(0.99);
+      this.vel.mult(0.97);
     }
     
     boosting(b) {
