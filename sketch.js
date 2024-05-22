@@ -57,7 +57,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.5; // default -0.5
+  let scrollval = -0.75; // default -0.5?
   
   // stop scrolling river
   if (_river.pos.x < (-_river.backdrop.width + width)) {
@@ -99,30 +99,28 @@ function draw() {
     console.log("Bonk");
 
     // Stuck between edge and grass
-    if (fish.pos.x < 10) {
-      fish.pos.x = 50;
-      fish.pos.y = 200;
-    }
-    if (fish.beenAwhileSinceEnteredGrassGetMeOut()) {
-      if (fish.pos.y < (height / 2)) {
-        // If spawned inside grass, move salmon outside of grass
-        while (fish.checkColorCollisionGrass()) {
-          fish.pos.y += 15;
-        }
-        fish._timeSinceEnteredGrass = 0;
-      }
-      if (fish.pos.y > (height / 2)) {
-        // If spawned inside grass, move salmon outside of grass
-        while (fish.checkColorCollisionGrass()) {
-          fish.pos.y -= 15;
-        }
-        fish._timeSinceEnteredGrass = 0;
-      }
-    }
-    
+   if (fish.pos.x < 10) {
+     fish.pos.x = 50;
+     fish.pos.y = 200;
+
+     // If spawned inside grass, move salmon outside of grass
+     while (fish.checkColorCollisionGrass()) {
+       fish.pos.y += 10;
+     }
+   }
    fish.stop();
    fish.backup();
  }
+ 
+  push()
+  noFill()
+  if (mouseIsPressed) {
+    stroke("orange")
+  } else {
+    stroke("white")
+  }
+  circle(mouseX, mouseY, 50);
+  pop()
   
   fish.checkOOB();
   fish.render();

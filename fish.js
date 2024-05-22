@@ -1,4 +1,5 @@
 const COLLISIONCOLOR_GRASS = [24, 62, 12, 255];
+const COLLISIONCOLOR_DAM = [185, 180, 171, 255];
 
 class Fish extends Ship {
 
@@ -30,16 +31,20 @@ class Fish extends Ship {
 
     checkColorCollisionGrass() {
       let fishCurrentColColor = get(fish.pos.x, fish.pos.y);
-
-      let res = fishCurrentColColor[0] === COLLISIONCOLOR_GRASS[0] && 
+      // console.log(fishCurrentColColor);
+      let grass = fishCurrentColColor[0] === COLLISIONCOLOR_GRASS[0] && 
               fishCurrentColColor[1] === COLLISIONCOLOR_GRASS[1] && 
               fishCurrentColColor[2] === COLLISIONCOLOR_GRASS[2] &&
               fishCurrentColColor[3] === COLLISIONCOLOR_GRASS[3];
               
-      if (res && this._timeSinceEnteredGrass === 0) {
+      let dam = fishCurrentColColor[0] === COLLISIONCOLOR_DAM[0] && 
+              fishCurrentColColor[1] === COLLISIONCOLOR_DAM[1] && 
+              fishCurrentColColor[2] === COLLISIONCOLOR_DAM[2] &&
+              fishCurrentColColor[3] === COLLISIONCOLOR_DAM[3]
+      if (grass && this._timeSinceEnteredGrass === 0) {
         this._timeSinceEnteredGrass = millis();
       }
-      return res;
+      return grass || dam;
     }
     
     beenAwhileSinceEnteredGrassGetMeOut() {
