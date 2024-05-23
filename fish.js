@@ -3,12 +3,13 @@ const COLLISIONCOLOR_DAM = [185, 180, 171, 255];
 
 class Fish extends Ship {
 
-    constructor(size, color, startingPos) {
+    constructor(size, color, startingPos, turnRate) {
       super(size, color, startingPos);
       this._swimming = false;
       this._lastSwimTime = 0;
       this._swimCooldown = 900;
       this._timeSinceEnteredGrass = 0;
+      this._turnRate = turnRate;
 
       // FUTURE: create collision box
       // define a collision box where we check all four corners for color collisions.
@@ -30,7 +31,7 @@ class Fish extends Ship {
     }
 
     checkColorCollisionGrass() {
-      let fishCurrentColColor = get(fish.pos.x, fish.pos.y);
+      let fishCurrentColColor = get(this.pos.x, this.pos.y);
       // console.log(fishCurrentColColor);
       let grass = fishCurrentColColor[0] === COLLISIONCOLOR_GRASS[0] && 
               fishCurrentColColor[1] === COLLISIONCOLOR_GRASS[1] && 
@@ -47,7 +48,42 @@ class Fish extends Ship {
       return grass || dam;
     }
     
+    // Bruh!
     beenAwhileSinceEnteredGrassGetMeOut() {
       return (millis() - this._timeSinceEnteredGrass) > 1500;
+    }
+    
+    /**
+     * Singular method to check for game collision
+     */
+    checkGameCollision() {
+      if (this.checkColorCollisionGrass()) {
+        console.log("Bonk");
+    
+        // Stuck between edge and grass
+       if (this.pos.x < 10) {
+        this.pos.x = 50;
+        this.pos.y = 200;
+    
+         // If spawned inside grass, move salmon outside of grass
+         while (this.checkColorCollisionGrass()) {
+          this.pos.y += 10;
+         }
+        }
+        this.stop();
+        this.backup();
+      }
+    }
+    
+    turnRight() {
+      this.setRotation(this._turnRate);
+    }
+    
+    turnLeft() {
+      this.setRotation(-this._turnRate);
+    }
+    
+    stopTurning() {
+      this.setRotation(0);
     }
   }

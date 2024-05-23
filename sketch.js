@@ -1,3 +1,16 @@
+/**
+ * Salmon Run!
+ * CSE 493F: Prototyping Interactive Systems with AI
+ * A prototype interactive "walk up and play" game where you use tools to clean different
+ * environmental issues to help salmon migrate to their spawn.
+ * 
+ * Brought to you by:
+ * - Noah Tablit
+ * - Stephanie Osorio-Tristan
+ * - Richard Le
+ * - Kyle Santos
+ */
+
 // this code adapted from Prof. Froehlich's Cookie Monster Game: https://editor.p5js.org/jonfroehlich/sketches/oUIeXC9sS
 
 // salmon controller serial
@@ -13,15 +26,25 @@ let _isTurningKeys = false; // if the a and d keys are being used to turn.
 // beholder.js
 let marker0;
 let marker1;
-let _lastPosHammer; // marker 0 position
-let _lastRotHammer; // marker 0 rotation. THIS IS IN RADIANS
-let _lastPosBrush; // marker 1
+let _lastPosHammer = 0; // marker 0 position
+let _lastRotHammer = 0; // marker 0 rotation. THIS IS IN RADIANS
+let _lastPosBrush = 0; // marker 1
 
+// fishladder
 const FISHLADDER_COOOLDOWNTIME = 500; // default 2500?
 let _fishLadders = [];
 let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
+
+// other globals
 let _river;
+const MIN_FISH = 6;
+const SPAWNBOX_X = 38;
+const SPAWNBOX_Y = 166;
+const SPAWNBOX_SIZE = 200;
 let fish;
+let _fishes = [];
+
+// pollution
 let pollution = [];
 let polluteNum = 3;
 
@@ -34,6 +57,16 @@ function preload() {
   fishLadderIm = loadImage("resources/fishladder.png");
 }
 
+function spawnSalmon() {
+  let amt = MIN_FISH + Math.floor(Math.random() * 3);
+  for (let i = 0; i < amt; i++) {
+    let x = int(random(SPAWNBOX_X, SPAWNBOX_X + SPAWNBOX_SIZE));
+    let y = int(random(SPAWNBOX_Y, SPAWNBOX_Y + SPAWNBOX_SIZE));
+    let spawnPos = createVector(x, y);
+    let curFish = new Fish(10, color("salmon"), spawnPos, 0.1);
+    _fishes.push(curFish);
+  }
+}
 
 function setup() {
   p5beholder.prepare();
@@ -43,6 +76,8 @@ function setup() {
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish(10, color("salmon"), createVector(27, 92));
+  spawnSalmon();
+  console.log(_fishes);
   pollution[0] = new Pollution(500, 200, 80); // array of pollution blobs 
   pollution[1] = new Pollution(1000, 180, 50);
   pollution[2] = new Pollution(2000, 120, 50);
@@ -72,7 +107,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.5; // default -0.5?
+  let scrollval = -0.4; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -104,6 +139,10 @@ function draw() {
 
   // scroll fish and pollution
   fish.scrollX(scrollval);
+  for (let i = 0; i < _fishes.length; i++) {
+    let salmon = _fishes[i];
+    salmon.scrollX(scrollval);
+  }
   for (let p = 0; p < polluteNum; p++) {
     pollution[p].scrollX(scrollval);
   }
@@ -142,23 +181,11 @@ function draw() {
   }
 
   // console.log(fishCurrentColColor)
-  if (fish.checkColorCollisionGrass()) {
-    console.log("Bonk");
-
-    // Stuck between edge and grass
-   if (fish.pos.x < 10) {
-     fish.pos.x = 50;
-     fish.pos.y = 200;
-
-     // If spawned inside grass, move salmon outside of grass
-     while (fish.checkColorCollisionGrass()) {
-       fish.pos.y += 10;
-     }
-    }
-   fish.stop();
-   fish.backup();
+  fish.checkGameCollision();
+  for (let i = 0; i < _fishes.length; i++) {
+    let salmon = _fishes[i];
+    salmon.checkGameCollision();
   }
- 
   // FISH LADDER PLACEMENT
   // if L is pressed and cooldown ok
 
@@ -167,6 +194,14 @@ function draw() {
     _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
     
   }
+  
+  for (let i = 0; i < _fishes.length; i++) {
+    let salmon = _fishes[i];
+    salmon.checkOOB();
+    salmon.render();
+    salmon.turn();
+    salmon.update();
+  }  
   
   fish.checkOOB();
   fish.render();
@@ -182,6 +217,10 @@ function input() {
   // "r"
   if (keyIsDown(82)) {
     fish.pos = createVector(width * 0.2, height / 2);
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.pos = createVector(width * 0.2, height / 2);
+    }
   }
   
   if (keyIsDown(LEFT_ARROW)) {
@@ -201,16 +240,28 @@ function input() {
   if (keyIsDown(68)) {
     _isTurningKeys = true;
     fish.setRotation(0.1)
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.turnRight();
+    }
     // "a"
   } else if (keyIsDown(65)) {
     _isTurningKeys = true;
     fish.setRotation(-0.1)
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.turnLeft();
+    }
   } else {
     _isTurningKeys = false;
   }
   
   if (!_isTurningMotion && !_isTurningKeys) {
     fish.setRotation(0);
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.stopTurning();
+    }
   }
   
   // "w"
@@ -219,6 +270,14 @@ function input() {
       fish.swim();
     } else {
       fish.stopSwim();
+    }
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      if (salmon.canSwim()) {
+        salmon.swim();
+      } else {
+        salmon.stopSwim();
+      }
     }
   }
 }

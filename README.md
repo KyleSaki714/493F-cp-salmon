@@ -5,7 +5,7 @@ This game strives to promote awareness for salmon depopulation in Washington sta
 Become a salmon and explore what kinds of threats exist for this species.
 
 Members
-- Noah Tablit
-- Stephanie Osorio-Tristan
-- Richard Le
-- Kyle Santos
+🐟 Noah Tablit
+🐟 Stephanie Osorio-Tristan
+🐟 Richard Le
+🐟 Kyle Santos
