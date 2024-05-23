@@ -23,7 +23,7 @@ let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
 let _river;
 let fish;
 let pollution = [];
-let polluteNum = 0;
+let polluteNum = 3;
 
 // images for preload 
 let backdropIm;
@@ -43,7 +43,9 @@ function setup() {
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
   fish = new Fish(10, color("salmon"), createVector(27, 92));
-  pollution[polluteNum] = new Pollution(500, 100, 80); // array of pollution blobs 
+  pollution[0] = new Pollution(500, 200, 80); // array of pollution blobs 
+  pollution[1] = new Pollution(1000, 180, 50);
+  pollution[2] = new Pollution(2000, 120, 50);
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -102,7 +104,10 @@ function draw() {
 
   // scroll fish and pollution
   fish.scrollX(scrollval);
-  pollution[0].scrollX(scrollval);
+  for (let p = 0; p < polluteNum; p++) {
+    pollution[p].scrollX(scrollval);
+  }
+
 
   // update marker positions
   if (marker0.present) {
@@ -132,7 +137,10 @@ function draw() {
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
   pop();
 
-  pollution[polluteNum].draw();
+  for (let p = 0; p < polluteNum; p++) {
+    pollution[p].draw();
+  }
+
   // console.log(fishCurrentColColor)
   if (fish.checkColorCollisionGrass()) {
     console.log("Bonk");
@@ -232,11 +240,12 @@ function onSerialDataReceived(eventSender, newData) {
   if (newData.startsWith("Shake")) {
     // separate out the shake value
     let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
-    if (pollution[polluteNum].brush_collide(_lastPosBrush)) {
-      console.log("should attempt to clean!")
-      pollution[polluteNum].clean_particle(shakeVal);
-    } else {
-      console.log("fail");
+    for (let p = 0; p < polluteNum; p++) {
+      if (pollution[p].brush_collide(_lastPosBrush)) {
+        console.log("should attempt to clean!")
+        pollution[p].clean_particle(shakeVal);
+        break;
+      } 
     }
   }
   //console.log("onSerialDataReceived", newData);
