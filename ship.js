@@ -4,7 +4,7 @@
  */
 
 class Ship {
-    constructor(size, color, startingPos) {
+    constructor(size, color, startingPos, boostRate) {
       // this.pos = createVector(width * 0.1, height /2);
       this.pos = startingPos;
       this.lastPos = startingPos;
@@ -13,7 +13,7 @@ class Ship {
       this.rotation = 0;
       this.vel = createVector(0,0);
       this.isBoosting = false;
-      this.boostRate = 2; // 0.7
+      this.boostRate = boostRate; // old is 0.7, default is now 2
       this.color = color;
     }
     

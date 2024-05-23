@@ -41,6 +41,10 @@ const MIN_FISH = 6;
 const SPAWNBOX_X = 38;
 const SPAWNBOX_Y = 166;
 const SPAWNBOX_SIZE = 200;
+const SALMON_TURNRATE_MIN = 0.05;
+const SALMON_TURNRATE_MAX = 0.15;
+const SALMON_BOOSTRATE_MIN = 1.5;
+const SALMON_BOOSTRATE_MAX = 2.5;
 let fish;
 let _fishes = [];
 
@@ -60,10 +64,19 @@ function preload() {
 function spawnSalmon() {
   let amt = MIN_FISH + Math.floor(Math.random() * 3);
   for (let i = 0; i < amt; i++) {
+    
+    // randomize spawn position
     let x = int(random(SPAWNBOX_X, SPAWNBOX_X + SPAWNBOX_SIZE));
     let y = int(random(SPAWNBOX_Y, SPAWNBOX_Y + SPAWNBOX_SIZE));
     let spawnPos = createVector(x, y);
-    let curFish = new Fish(10, color("salmon"), spawnPos, 0.1);
+    
+    // randomize turn rate
+    let turnRate = getRandomBetween(SALMON_TURNRATE_MIN, SALMON_TURNRATE_MAX);
+    
+    // randomize boost rate
+    let boostRate = getRandomBetween(SALMON_BOOSTRATE_MIN, SALMON_BOOSTRATE_MAX);
+    
+    let curFish = new Fish(10, color("salmon"), spawnPos, turnRate, boostRate);
     _fishes.push(curFish);
   }
 }
@@ -75,7 +88,7 @@ function setup() {
   // createCanvas(1600, 900);
   // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
   // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
-  fish = new Fish(10, color("salmon"), createVector(27, 92));
+  fish = new Fish(10, color("salmon"), createVector(27, 92), 0.1, 2);
   spawnSalmon();
   console.log(_fishes);
   pollution[0] = new Pollution(500, 200, 80); // array of pollution blobs 
@@ -379,9 +392,19 @@ function onSerialDataReceived(eventSender, newData) {
           fish.swim();
           console.log("Swim");
         }
+        for (let i = 0; i < _fishes.length; i++) {
+          let salmon = _fishes[i];
+          if (salmon.canSwim()) {
+            salmon.swim();
+          }
+        }
         _lastSwimAngle = yFraction;
       } else {
-        fish.stopSwim();  
+        fish.stopSwim();
+        for (let i = 0; i < _fishes.length; i++) {
+          let salmon = _fishes[i];
+          salmon.stopSwim();
+        }
       }
       
       // let curYpolarity = yFraction > 0;
@@ -414,4 +437,9 @@ function openConnectSerialDialog() {
   if (!serial.isOpen()) {
     serial.connectAndOpen(null, serialOptions);
   }
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+function getRandomBetween(min, max) {
+  return Math.random() * (max - min) + min;
 }

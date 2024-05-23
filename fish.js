@@ -3,8 +3,9 @@ const COLLISIONCOLOR_DAM = [185, 180, 171, 255];
 
 class Fish extends Ship {
 
-    constructor(size, color, startingPos, turnRate) {
-      super(size, color, startingPos);
+    constructor(size, color, startingPos, turnRate, boostRate) {
+      super(size, color, startingPos, boostRate);
+      this._id = 100 + Math.trunc(Math.random() * 900);
       this._swimming = false;
       this._lastSwimTime = 0;
       this._swimCooldown = 900;
@@ -58,7 +59,7 @@ class Fish extends Ship {
      */
     checkGameCollision() {
       if (this.checkColorCollisionGrass()) {
-        console.log("Bonk");
+        console.log("Salmon #" + this._id + " said: \"Bonk\"");
     
         // Stuck between edge and grass
        if (this.pos.x < 10) {
