@@ -1,6 +1,6 @@
 class Backdrop {
   constructor(image) {
-    this.backdrop = image;
+    this.image = image;
     this.pos = createVector(0, 0);
     this.defaultScroll = 0.1;
   }
@@ -16,7 +16,7 @@ class Backdrop {
   render() {
     push();
     translate(this.pos);
-    image(this.backdrop, 0, 0);
+    image(this.image, 0, 0);
     pop();
   }
   

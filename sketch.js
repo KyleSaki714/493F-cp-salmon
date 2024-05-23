@@ -17,15 +17,23 @@ let _lastPosHammer; // marker 0 position
 let _lastRotHammer; // marker 0 rotation. THIS IS IN RADIANS
 let _lastPosBrush; // marker 1
 
-let backdropIm;
+const FISHLADDER_COOOLDOWNTIME = 500; // default 2500?
+let _fishLadders = [];
+let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
 let _river;
 let fish;
 let pollution = [];
 let polluteNum = 0;
 
+// images for preload 
+let backdropIm;
+let fishLadderIm;
+
 function preload() {
   backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
+  fishLadderIm = loadImage("resources/fishladder.png");
 }
+
 
 function setup() {
   p5beholder.prepare();
@@ -63,18 +71,36 @@ function draw() {
   input();
 
   let scrollval = -0.5; // default -0.5?
-  
   // stop scrolling river
-  if (_river.pos.x < (-_river.backdrop.width + width)) {
+  if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
     scrollval = 0;
   }
   
+  // scroll and draw river
   _river.scrollX(scrollval);  
   // console.log(_river.pos.x)
   // draw background before fish, for collision colors
   _river.render();
+  
+  // scroll and draw any fishladders
+  if (_fishLadders.length > 0) {
+    for (let i = 0; i < _fishLadders.length; i++) {
+      let fl = _fishLadders[i];
+      // console.log(_fishLadders)
+      if (fl != undefined) {
+        // delete if goes past canvas
+        if (fl.pos.x < 0 - fl.image.width) {
+          _fishLadders[i] = undefined;
+          // console.log("fishladder " + i + " deleted");
+        }
+        fl.scrollX(scrollval);
+        fl.render();
+      }
+    }
+  }
 
+  // scroll fish and pollution
   fish.scrollX(scrollval);
   pollution[0].scrollX(scrollval);
 
@@ -84,20 +110,21 @@ function draw() {
     _lastPosHammer = pos;
     let rot = marker0.rotation;
     _lastRotHammer = rot;
-    _lastPosHammer.x = width - pos.x;
+    // _lastPosHammer.x = width - pos.x;
   }
   if (marker1.present) {
     let pos = p5beholder.cameraToCanvasVector(marker1.center);
     _lastPosBrush = pos;
-    _lastPosBrush.x = width - pos.x;
+    // _lastPosBrush.x = width - pos.x;
   }
 
-  // draw sttuff with the marker positions
+  // draw marker cursors with the marker positions
   push()
-  fill("brown")
+  stroke("gray")
+  fill("lightblue")
   translate(_lastPosHammer.x, _lastPosHammer.y); 
   rotate(_lastRotHammer);
-  rect(0, 0, 10, 10);
+  rect(0, 0, 30, 10);
   pop()
 
   push();
@@ -119,20 +146,19 @@ function draw() {
      while (fish.checkColorCollisionGrass()) {
        fish.pos.y += 10;
      }
-   }
+    }
    fish.stop();
    fish.backup();
- }
- 
-  push()
-  noFill()
-  if (mouseIsPressed) {
-    stroke("orange")
-  } else {
-    stroke("white")
   }
-  circle(mouseX, mouseY, 50);
-  pop()
+ 
+  // FISH LADDER PLACEMENT
+  // if L is pressed and cooldown ok
+
+  if (keyIsDown(76) && (millis() - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+    _lastFishLadderPlacedTime = millis()
+    _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+    
+  }
   
   fish.checkOOB();
   fish.render();
