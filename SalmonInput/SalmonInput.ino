@@ -147,11 +147,20 @@ void setup(void) {
 }
 
 void loop() {
+
+  // write all 3 controller data, delimited by "|"
   salmon();
+  Serial.print("|");
+  scrub();
+  Serial.print("|");
+  hammer();
+
   Serial.println();
   delay(10);
 }
 
+// write data for salmon controller. format:
+// salmon:yaw,pitch,roll,accelerationX,accelerationY,accelerationZ
 void salmon() {
   // if programming failed, don't try to do anything
   // if (!dmpReady) return;
@@ -160,20 +169,36 @@ void salmon() {
     // display Euler angles in degrees
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetEuler(euler, &q);
-    Serial.print("euler\t");
+    Serial.print("salmon:");
     Serial.print(euler[0] * 180/M_PI);
-    Serial.print("\t");
+    Serial.print(",");
     Serial.print(euler[1] * 180/M_PI);
-    Serial.print("\t");
+    Serial.print(",");
     Serial.print(euler[2] * 180/M_PI);
+    Serial.print(",");
+
+    // display real acceleration, adjusted to remove gravity
+    mpu.dmpGetAccel(&aa, fifoBuffer);
+    mpu.dmpGetGravity(&gravity, &q);
+    mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+    // Serial.print("areal\t");
+    Serial.print(aaReal.x);
+    Serial.print(",");
+    Serial.print(aaReal.y);
+    Serial.print(",");
+    Serial.print(aaReal.z);
   }
 }
 
+// write data for scrub controller. format:
+// scrub: TODO
 void scrub() {
-
+  Serial.print("scrub:");
 }
 
+// write data for hammer controller. format:
+// hammer: TODO, just one button tho
 void hammer() {
-
+  Serial.print("hammer:");
 }
 
