@@ -308,10 +308,11 @@ function onSerialConnectionClosed(eventSender) {
 }
 
 /**
- * 
+ * Using a given string of comma separated values,
+ * parses it into gyro and accelerometer data for the salmon controller.
  * @param {String[]} valuesString 
  */
-function handleInputSalmon(valuesString) {
+function handleSerialSalmon(valuesString) {
   // console.log(values);
   const values = valuesString.split(',');
 
@@ -325,144 +326,150 @@ function handleInputSalmon(valuesString) {
 
   console.log(yaw);
 
+  // TODO: (old acceleromter code)  
+  // let startIndex = 0;
+  // let endIndex = newData.indexOf(",");
+  // if(endIndex != -1){
+  //   // Parse x location (normalized between 0 and 1)
+  //   let strBrushXFraction = newData.substring(startIndex, endIndex).trim();
+  //   let xFraction = parseFloat(strBrushXFraction);
+  //   // console.log("x: " + xFraction);
+    
+  //   // Parse y location (normalized between 0 and 1)
+  //   startIndex = endIndex + 1;
+  //   endIndex = newData.length;
+  //   let strBrushYFraction = newData.substring(startIndex, endIndex).trim();
+  //   let yFraction = parseFloat(strBrushYFraction);
+
+  //   // console.log("y: " + yFraction);
+  //   turnAngle = newData.substring(startIndex, endIndex).trim();
+  //   const angleArr = turnAngle.split(",");
+  //   const zFraction = parseFloat(angleArr[1]);
+  //   // console.log("z: " + zFraction);
+  //   // console.log(zFraction);
+
+  //   //turns
+  //   let rotValue = (xFraction / 9.8) * 0.1;
+  //   if (xFraction > 5.0) {
+  //     _isTurningMotion = true;
+  //     fish.setRotation(rotValue)
+  //   } else if (xFraction < -5.0) {
+  //     _isTurningMotion = true;
+  //     fish.setRotation(rotValue)
+  //   } else {
+  //     _isTurningMotion = false;
+  //   }
+    
+  //   // if (_prevYPolarity && xFraction > 0) {
+  //   //   //bgy += 5;
+  //   //   if (fish.canSwim()) {
+  //   //     // console.log("swimming");
+  //   //     fish.swim();
+  //   //   } else {
+  //   //     // console.log("not swimming");
+  //   //     fish.stopSwim();
+  //   //   }
+  //   //   //_prevYPolarity = false;
+  //   // }
+  //   // else if(!_prevYPolarity && xFraction < 0) {
+  //   //   //bgy += 5;
+  //   //   if (fish.canSwim()) {
+  //   //     fish.swim();
+  //   //   } else {
+  //   //     fish.stopSwim();
+  //   //   }
+  //   //   //_prevYPolarity = true;
+  //   // }
+    
+  //   // swimming
+  //   let distFromLastSwim = Math.abs(yFraction - _lastSwimAngle);
+  //   if (distFromLastSwim > SWIM_DIST_THRESH) {
+  //     if (fish.canSwim()) {
+  //       fish.swim();
+  //       console.log("Swim");
+  //     }
+  //     for (let i = 0; i < _fishes.length; i++) {
+  //       let salmon = _fishes[i];
+  //       if (salmon.canSwim()) {
+  //         salmon.swim();
+  //       }
+  //     }
+  //     _lastSwimAngle = yFraction;
+  //   } else {
+  //     fish.stopSwim();
+  //     for (let i = 0; i < _fishes.length; i++) {
+  //       let salmon = _fishes[i];
+  //       salmon.stopSwim();
+  //     }
+  //   }
+    
+  //   // let curYpolarity = yFraction > 0;
+  //   // if (curYpolarity != _prevYPolarity) {
+  //   //   if (fish.canSwim()) {
+  //   //     fish.swim();
+  //   //     // console.log("Swim" + fish.pos);
+  //   //   }
+  //   // } else {
+  //   //   fish.stopSwim();
+  //   // }
+    
+    
+  //   // toggle polarity 
+  //   // if (yFraction > 0) {
+  //   //   _prevYPolarity = true;
+  //   //   // console.log(_prevYPolarity);
+  //   // } else if (yFraction <= 0) {
+  //   //   _prevYPolarity = false;
+  //   //   // console.log(_prevYPolarity);
+  //   // }
+    
+  // }
+
+}
+
+/**
+ *
+ * @param {String[]} valuesString 
+ */
+function handleSerialScrub(valuesString) {
+  // console.log(values);
+  const values = valuesString.split(',');
+
+  // TODO
+  // separate out the shake value
+  // let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
+  // for (let p = 0; p < polluteNum; p++) {
+  //   if (pollution[p].brush_collide(_lastPosBrush)) {
+  //     console.log("should attempt to clean!")
+  //     pollution[p].clean_particle(shakeVal);
+  //     break;
+  //   } 
+  // }
+
+}
+
+/**
+ * TODO most likely just a button press
+ * @param {String[]} valuesString 
+ */
+function handleSerialHammer(valuesString) {
+  // console.log(values);
+  const values = valuesString.split(',');
+
 }
 
 function onSerialDataReceived(eventSender, newData) {
   let controllers = newData.split("|");
   for (let ctrl of controllers) {
     let nameSplit = ctrl.split(":");
-    let name = nameSplit[0];
+    const name = nameSplit[0];
+    const values = nameSplit[1];
     if (name === "salmon") {
-      handleInputSalmon(nameSplit[1]);
+      handleSerialSalmon(values);
     } else if (name === "scrub") {
-      
+      handleSerialScrub(values)
     } else if (name === "hammer") {
-
-    }
-  }
-
-
-  // TODO: first check location of aruco...
-  if (newData.startsWith("Shake")) {
-    // separate out the shake value
-    let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
-    for (let p = 0; p < polluteNum; p++) {
-      if (pollution[p].brush_collide(_lastPosBrush)) {
-        console.log("should attempt to clean!")
-        pollution[p].clean_particle(shakeVal);
-        break;
-      } 
-    }
-  }
-  //console.log("onSerialDataReceived", newData);
-   else if(!newData.startsWith("#")){
-    // Clear screen
-//     if(newData.toLowerCase().startsWith("clear")) {
-//       background(127);
-//     }
-    
-//     if (newData.toLowerCase().startsWith("color")) {
-//       isRainbow = !isRainbow;
-//     }
-    
-    let startIndex = 0;
-    let endIndex = newData.indexOf(",");
-    if(endIndex != -1){
-      // Parse x location (normalized between 0 and 1)
-      let strBrushXFraction = newData.substring(startIndex, endIndex).trim();
-      let xFraction = parseFloat(strBrushXFraction);
-      // console.log("x: " + xFraction);
-      
-      // Parse y location (normalized between 0 and 1)
-      startIndex = endIndex + 1;
-      endIndex = newData.length;
-      let strBrushYFraction = newData.substring(startIndex, endIndex).trim();
-      let yFraction = parseFloat(strBrushYFraction);
-
-      // console.log("y: " + yFraction);
-      turnAngle = newData.substring(startIndex, endIndex).trim();
-      const angleArr = turnAngle.split(",");
-      const zFraction = parseFloat(angleArr[1]);
-      // console.log("z: " + zFraction);
-      // console.log(zFraction);
-
-      //turns
-      let rotValue = (xFraction / 9.8) * 0.1;
-      if (xFraction > 5.0) {
-        _isTurningMotion = true;
-        fish.setRotation(rotValue)
-      } else if (xFraction < -5.0) {
-        _isTurningMotion = true;
-        fish.setRotation(rotValue)
-      } else {
-        _isTurningMotion = false;
-      }
-      
-      // if (_prevYPolarity && xFraction > 0) {
-      //   //bgy += 5;
-      //   if (fish.canSwim()) {
-      //     // console.log("swimming");
-      //     fish.swim();
-      //   } else {
-      //     // console.log("not swimming");
-      //     fish.stopSwim();
-      //   }
-      //   //_prevYPolarity = false;
-      // }
-      // else if(!_prevYPolarity && xFraction < 0) {
-      //   //bgy += 5;
-      //   if (fish.canSwim()) {
-      //     fish.swim();
-      //   } else {
-      //     fish.stopSwim();
-      //   }
-      //   //_prevYPolarity = true;
-      // }
-      
-      // swimming
-      let distFromLastSwim = Math.abs(yFraction - _lastSwimAngle);
-      if (distFromLastSwim > SWIM_DIST_THRESH) {
-        if (fish.canSwim()) {
-          fish.swim();
-          console.log("Swim");
-        }
-        for (let i = 0; i < _fishes.length; i++) {
-          let salmon = _fishes[i];
-          if (salmon.canSwim()) {
-            salmon.swim();
-          }
-        }
-        _lastSwimAngle = yFraction;
-      } else {
-        fish.stopSwim();
-        for (let i = 0; i < _fishes.length; i++) {
-          let salmon = _fishes[i];
-          salmon.stopSwim();
-        }
-      }
-      
-      // let curYpolarity = yFraction > 0;
-      // if (curYpolarity != _prevYPolarity) {
-      //   if (fish.canSwim()) {
-      //     fish.swim();
-      //     // console.log("Swim" + fish.pos);
-      //   }
-      // } else {
-      //   fish.stopSwim();
-      // }
-      
-      
-      // toggle polarity 
-      // if (yFraction > 0) {
-      //   _prevYPolarity = true;
-      //   // console.log(_prevYPolarity);
-      // } else if (yFraction <= 0) {
-      //   _prevYPolarity = false;
-      //   // console.log(_prevYPolarity);
-      // }
-      
-
-
+      handleSerialHammer(values);
     }
   }
 }
