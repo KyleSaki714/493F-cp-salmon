@@ -307,7 +307,41 @@ function onSerialConnectionClosed(eventSender) {
   console.log("onSerialConnectionClosed");
 }
 
+/**
+ * 
+ * @param {String[]} valuesString 
+ */
+function handleInputSalmon(valuesString) {
+  // console.log(values);
+  const values = valuesString.split(',');
+
+  // Parse each value as a float
+  const yaw = parseFloat(values[0]);
+  const pitch = parseFloat(values[1]);
+  const roll = parseFloat(values[2]);
+  const accelerationX = parseFloat(values[3]);
+  const accelerationY = parseFloat(values[4]);
+  const accelerationZ = parseFloat(values[5]);
+
+  console.log(yaw);
+
+}
+
 function onSerialDataReceived(eventSender, newData) {
+  let controllers = newData.split("|");
+  for (let ctrl of controllers) {
+    let nameSplit = ctrl.split(":");
+    let name = nameSplit[0];
+    if (name === "salmon") {
+      handleInputSalmon(nameSplit[1]);
+    } else if (name === "scrub") {
+      
+    } else if (name === "hammer") {
+
+    }
+  }
+
+
   // TODO: first check location of aruco...
   if (newData.startsWith("Shake")) {
     // separate out the shake value
