@@ -55,6 +55,9 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS);
 // I2C
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();
+// for scrubber:
+float filter_shake = 0;
+float filter_coeff = 0.3;
 
 void setup(void) {
   // join I2C bus (I2Cdev library doesn't do this automatically)
