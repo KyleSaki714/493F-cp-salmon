@@ -37,14 +37,11 @@ let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
 
 // other globals
 let _river;
-const MIN_FISH = 6;
-const SPAWNBOX_X = 38;
-const SPAWNBOX_Y = 166;
-const SPAWNBOX_SIZE = 200;
-const SALMON_TURNRATE_MIN = 0.05;
-const SALMON_TURNRATE_MAX = 0.15;
-const SALMON_BOOSTRATE_MIN = 1.5;
-const SALMON_BOOSTRATE_MAX = 2.5;
+const AMT_FISH = 6;
+let SALMON_SPAWNPOINT_X; // spawnpoint declarations are init in setup because height and width of canvas is variable.
+let SALMON_SPAWNPOINT_Y;
+const SALMON_TURNRATE = 0.1;
+const SALMON_BOOSTRATE = 2;
 let fish;
 let _fishes = [];
 
@@ -62,21 +59,16 @@ function preload() {
 }
 
 function spawnSalmon() {
-  let amt = MIN_FISH + Math.floor(Math.random() * 3);
-  for (let i = 0; i < amt; i++) {
-    
+  const SPAWNINGRADIUS = 25;
+  for (let i = 0; i < AMT_FISH; i++) {
+
     // randomize spawn position
-    let x = int(random(SPAWNBOX_X, SPAWNBOX_X + SPAWNBOX_SIZE));
-    let y = int(random(SPAWNBOX_Y, SPAWNBOX_Y + SPAWNBOX_SIZE));
+    const THETA = (2 * PI / AMT_FISH) * i;
+    let x = SALMON_SPAWNPOINT_X + SPAWNINGRADIUS * Math.cos(THETA);
+    let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    // randomize turn rate
-    let turnRate = getRandomBetween(SALMON_TURNRATE_MIN, SALMON_TURNRATE_MAX);
-    
-    // randomize boost rate
-    let boostRate = getRandomBetween(SALMON_BOOSTRATE_MIN, SALMON_BOOSTRATE_MAX);
-    
-    let curFish = new Fish(10, color("salmon"), spawnPos, turnRate, boostRate);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE);
     _fishes.push(curFish);
   }
 }
@@ -85,13 +77,17 @@ function setup() {
   p5beholder.prepare();
   createCanvas(640, 480); // small canvas so it doesnt lag
   rectMode(CENTER);
-  // createCanvas(1600, 900);
-  // fish = new Fish(width / 2, height * 0.90, 15, 20, "#FA8072", 10, 5);
-  // fish = new Fish(0, 0, 15, 20, "#FA8072", 5, 5);
-  fish = new Fish(10, color("salmon"), createVector(27, 92), 0.1, 2);
+
+  // assigning 
+  SALMON_SPAWNPOINT_X = width * 0.2;
+  SALMON_SPAWNPOINT_Y = height / 2;
+  
+  // one middle fish
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE);
   spawnSalmon();
-  console.log(_fishes);
-  pollution[0] = new Pollution(500, 200, 80); // array of pollution blobs 
+  
+  // array of pollution blobs 
+  pollution[0] = new Pollution(500, 200, 80); 
   pollution[1] = new Pollution(1000, 180, 50);
   pollution[2] = new Pollution(2000, 120, 50);
 
@@ -120,7 +116,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.4; // default -0.5?
+  let scrollval = 0; // default -0.4
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
