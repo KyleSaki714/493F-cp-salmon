@@ -38,10 +38,11 @@ let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
 // other globals
 let _river;
 const AMT_FISH = 6;
-let SALMON_SPAWNPOINT_X; // spawnpoint declarations are init in setup because height and width of canvas is variable.
+let SALMON_SPAWNPOINT_X;
 let SALMON_SPAWNPOINT_Y;
 const SALMON_TURNRATE = 0.1;
 const SALMON_BOOSTRATE = 2;
+const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
 
@@ -68,7 +69,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF);
     _fishes.push(curFish);
   }
 }
@@ -78,12 +79,12 @@ function setup() {
   createCanvas(640, 480); // small canvas so it doesnt lag
   rectMode(CENTER);
 
-  // assigning 
+  // spawnpoint declarations are init in setup because height and width of canvas is variable.
   SALMON_SPAWNPOINT_X = width * 0.2;
   SALMON_SPAWNPOINT_Y = height / 2;
   
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF);
   spawnSalmon();
   
   // array of pollution blobs 

@@ -1,16 +1,19 @@
 const COLLISIONCOLOR_GRASS = [24, 62, 12, 255];
 const COLLISIONCOLOR_DAM = [185, 180, 171, 255];
+const COLLISIONCOLOR_POLLUTION = [255, 0, 0, 255];
 
 class Fish extends Ship {
 
-    constructor(size, color, startingPos, turnRate, boostRate) {
-      super(size, color, startingPos, boostRate);
+    constructor(size, color, startingPos, turnRate, boostRate, boostRateDebuff) {
+      super(size, color, startingPos, boostRate, boostRateDebuff);
       this._id = 100 + Math.trunc(Math.random() * 900);
       this._swimming = false;
       this._lastSwimTime = 0;
       this._swimCooldown = 900;
       this._timeSinceEnteredGrass = 0;
       this._turnRate = turnRate;
+      this._polluted = false;
+      this._pollutedBoostRate = boostRate * boostRateDebuff; // reduction in boost
 
       // FUTURE: create collision box
       // define a collision box where we check all four corners for color collisions.
@@ -31,8 +34,22 @@ class Fish extends Ship {
             !this.isBoosting;
     }
 
+    getCurrentFishCollisionColor() {
+      return get(this.pos.x, this.pos.y);
+    }
+    
+    checkColorCollisionPollution() {
+      let fishCurrentColColor = this.getCurrentFishCollisionColor();
+      // console.log(fishCurrentColColor);
+      let pollu = fishCurrentColColor[0] === COLLISIONCOLOR_POLLUTION[0] && 
+              fishCurrentColColor[1] === COLLISIONCOLOR_POLLUTION[1] && 
+              fishCurrentColColor[2] === COLLISIONCOLOR_POLLUTION[2] &&
+              fishCurrentColColor[3] === COLLISIONCOLOR_POLLUTION[3];
+      return pollu;
+    }
+    
     checkColorCollisionGrass() {
-      let fishCurrentColColor = get(this.pos.x, this.pos.y);
+      let fishCurrentColColor = this.getCurrentFishCollisionColor();
       // console.log(fishCurrentColColor);
       let grass = fishCurrentColColor[0] === COLLISIONCOLOR_GRASS[0] && 
               fishCurrentColColor[1] === COLLISIONCOLOR_GRASS[1] && 
@@ -73,6 +90,12 @@ class Fish extends Ship {
         }
         this.stop();
         this.backup();
+      }
+      
+      if (this.checkColorCollisionPollution()) {
+        console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
+        this._polluted = true;
+        this.setBoostRate(this._pollutedBoostRate);
       }
     }
     

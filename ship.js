@@ -28,6 +28,14 @@ class Ship {
       this.vel.mult(0.97);
     }
     
+    getBoostRate() {
+      return this.boostRate;
+    }
+    
+    setBoostRate(val) {
+      this.boostRate = val;
+    }
+    
     boosting(b) {
       this.isBoosting = b;
     }
