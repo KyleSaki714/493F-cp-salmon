@@ -4,7 +4,7 @@ const COLLISIONCOLOR_POLLUTION = [255, 0, 0, 255];
 
 class Fish extends Ship {
 
-    constructor(size, color, startingPos, turnRate, boostRate, boostRateDebuff) {
+    constructor(size, color, startingPos, turnRate, boostRate, boostRateDebuff, sprite, spriteSick) {
       super(size, color, startingPos, boostRate, boostRateDebuff);
       this._id = 100 + Math.trunc(Math.random() * 900);
       this._swimming = false;
@@ -14,7 +14,13 @@ class Fish extends Ship {
       this._turnRate = turnRate;
       this._polluted = false;
       this._pollutedBoostRate = boostRate * boostRateDebuff; // reduction in boost
-
+      this.sprite = sprite;  
+      this.spriteSick = spriteSick;
+      const imageSize = 0.75;
+      this.sprite.resize(this.sprite.width * imageSize, this.sprite.height * imageSize)
+      this.spriteSick.resize(this.spriteSick.width * imageSize, this.spriteSick.height * imageSize)
+      
+      this.currentSprite = this.sprite;
       // FUTURE: create collision box
       // define a collision box where we check all four corners for color collisions.
     }
@@ -96,6 +102,7 @@ class Fish extends Ship {
         console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
         this._polluted = true;
         this.setBoostRate(this._pollutedBoostRate);
+        this.changeSpriteSick();
       }
     }
     
@@ -109,5 +116,22 @@ class Fish extends Ship {
     
     stopTurning() {
       this.setRotation(0);
+    }
+    
+    changeSpriteNormal() {
+      this.currentSprite = this.sprite;
+    }
+    
+    changeSpriteSick() {
+      this.currentSprite = this.spriteSick;
+    }
+    
+    drawSprite() {
+      push()
+      imageMode(CENTER)
+      translate(this.pos.x, this.pos.y);
+      rotate(this.heading);
+      image(this.currentSprite, 0,0)
+      pop()
     }
   }

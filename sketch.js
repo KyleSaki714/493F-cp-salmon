@@ -53,10 +53,15 @@ let polluteNum = 3;
 // images for preload 
 let backdropIm;
 let fishLadderIm;
+let salmonSprite_normal;
+let salmonSprite_sick;
 
 function preload() {
-  backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
+  // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
+  backdropIm = loadImage("resources/testriver_3012_480_scrolling_balllardlocks.png");
   fishLadderIm = loadImage("resources/fishladder.png");
+  salmonSprite_normal = loadImage("resources/salmon.png");
+  salmonSprite_sick = loadImage("resources/salmon_sick.png");
 }
 
 function spawnSalmon() {
@@ -69,7 +74,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
     _fishes.push(curFish);
   }
 }
@@ -84,7 +89,7 @@ function setup() {
   SALMON_SPAWNPOINT_Y = height / 2;
   
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
   spawnSalmon();
   
   // array of pollution blobs 
@@ -117,7 +122,7 @@ function draw() {
     
   input();
 
-  let scrollval = 0; // default -0.4
+  let scrollval = -0.4; // default -0.4
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -209,12 +214,14 @@ function draw() {
     let salmon = _fishes[i];
     salmon.checkOOB();
     salmon.render();
+    salmon.drawSprite();
     salmon.turn();
     salmon.update();
   }  
   
   fish.checkOOB();
   fish.render();
+  fish.drawSprite();
   fish.turn();
   fish.update();
   
