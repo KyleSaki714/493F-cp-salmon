@@ -11,27 +11,20 @@ class Pollution extends Shape {
   constructor(x, y, w) {
     super(x, y, w, w);
     // random num of particles within radius
-    this.num_particles = int(random(5, 10));
+    this.num_particles = int(random(4, this.width/5));
     this.particles = [];
+    this.br
     print(this.num_particles);
     colorMode(HSB);
     for (let i = 0; i < this.num_particles; i++) {
-      this.particles.push(new Circle(this.xpos + int(random(0, this.width)), this.ypos + int(random(0,this.width)), int(random(3, 20)), color(0,100, 100)));
+      this.particles.push(new Circle(this.xpos + int(random(0, this.width)), this.ypos + int(random(0,this.width)), int(random(8, 15)), color(0,100, 100)));
     }
   }
 
   draw() {
-    push();
-    rectMode(CORNER);
-    noFill();
-    strokeWeight(4);
-    stroke(51);
-    
-    square(this.xpos, this.ypos, this.width);
     for (let i = 0; i < this.num_particles; i++) {
       this.particles[i].draw();
     }
-    pop();
   }
 
   scrollX(val) {
@@ -43,7 +36,17 @@ class Pollution extends Shape {
 
   brush_collide(brush_pos) {
     console.log(brush_pos + " " + this.xpos + " " + this.ypos + " " + this.width + this.getRight());
-    return this.xpos <= brush_pos.x && brush_pos.x <= this.getRight() && this.ypos <= brush_pos.y && brush_pos.y <= this.getBottom();
+    let collision = this.xpos <= brush_pos.x && brush_pos.x <= this.getRight() && this.ypos <= brush_pos.y && brush_pos.y <= this.getBottom();
+    if (collision) {
+      push()
+      rectMode(CORNER);
+      stroke(46, 100, 85);
+      noFill();
+      strokeWeight(4);
+      square(this.xpos, this.ypos, this.width);
+      pop()
+    }
+    return collision
   }
 
   clean_particle(threshold) {
