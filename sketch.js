@@ -50,7 +50,6 @@ let _fishes = [];
 
 // pollution
 let pollution = [];
-let polluteNum = 3;
 
 // images for preload 
 let backdropIm;
@@ -91,9 +90,13 @@ function setup() {
   fish = new Fish(10, color("salmon"), createVector(27, 92), 0.1, 2);
   spawnSalmon();
   console.log(_fishes);
-  pollution[0] = new Pollution(500, 200, 80); // array of pollution blobs 
-  pollution[1] = new Pollution(1000, 180, 50);
-  pollution[2] = new Pollution(2000, 120, 50);
+  pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
+  pollution.push(new Pollution(1100, 170, 90));
+  pollution.push(new Pollution(1500, 75, 85));
+  pollution.push(new Pollution(1800, 330, 60));
+  pollution.push(new Pollution(2300, 180, 60));
+  pollution.push(new Pollution(2500, 130, 60));
+  pollution.push(new Pollution(2600, 200, 60));
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -120,7 +123,7 @@ function draw() {
     
   input();
 
-  let scrollval = -0.4; // default -0.5?
+  let scrollval = -0.5; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -156,7 +159,7 @@ function draw() {
     let salmon = _fishes[i];
     salmon.scrollX(scrollval);
   }
-  for (let p = 0; p < polluteNum; p++) {
+  for (let p = 0; p < pollution.length; p++) {
     pollution[p].scrollX(scrollval);
   }
 
@@ -189,7 +192,7 @@ function draw() {
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
   pop();
 
-  for (let p = 0; p < polluteNum; p++) {
+  for (let p = 0; p < pollution.length; p++) {
     pollution[p].draw();
   }
 
