@@ -56,10 +56,11 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // I2C
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 // for scrubber:
-float filter_shake = 0;
+float filter_shake = 0.0;
 float filter_coeff = 0.3;
 
 void setup(void) {
+  delay(500);
   // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
       Wire.begin();
@@ -69,7 +70,7 @@ void setup(void) {
   #endif
 
   Serial.begin(115200);
-  while (!Serial) delay(10);     // will pause Zero, Leonardo, etc until serial console opens
+  while (!Serial) delay(500);     // will pause Zero, Leonardo, etc until serial console opens
 
   // initialize mpu
   Serial.println(F("Initializing I2C devices..."));
@@ -154,6 +155,7 @@ void loop() {
   // write all 3 controller data, delimited by "|"
   salmon();
   Serial.print("|");
+
   scrub();
   Serial.print("|");
   hammer();
@@ -196,7 +198,6 @@ void salmon() {
 // write data for scrub controller. format:
 // scrub: TODO
 void scrub() {
-    // put your main code here, to run repeatedly:
     sensors_event_t event;
     lis.getEvent(&event);
 
@@ -206,9 +207,9 @@ void scrub() {
     float shake = sqrt(x*x + y*y +  z*z);
     shake -= 9.8;
     shake *= shake;
-    shake /= 140; // experimentally determined higher end of shake vector magnitude
+    shake /= 50; // experimentally determined higher end of shake vector magnitude
     filter_shake = shake * (filter_coeff) + filter_shake * (1- filter_coeff); // low pass filter
-    filter_shake = constrain(filter_shake, 0, 1.0);
+    filter_shake = constrain(filter_shake, 0.0, 1.0);
     if (filter_shake > 0.1) {
       Serial.print("scrub:");
       Serial.print(filter_shake);
