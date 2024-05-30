@@ -23,6 +23,7 @@ class Fish extends Ship {
       this.currentSprite = this.sprite;
       // FUTURE: create collision box
       // define a collision box where we check all four corners for color collisions.
+      this.snatched = false;
     }
     
     swim() {
@@ -37,15 +38,15 @@ class Fish extends Ship {
     // prevent the fish from swimming until it rests
     canSwim() {
       return (millis() - this._lastSwimTime) > this._swimCooldown &&
-            !this.isBoosting;
+            !this.isBoosting && !this.snatched;
     }
 
     getCurrentFishCollisionColor() {
       return get(this.pos.x, this.pos.y);
     }
     
-    checkColorCollisionPollution() {
-      let fishCurrentColColor = this.getCurrentFishCollisionColor();
+    checkColorCollisionPollution(fishCurrentColColor) {
+      // let fishCurrentColColor = this.getCurrentFishCollisionColor();
       // console.log(fishCurrentColColor);
       let pollu = fishCurrentColColor[0] === COLLISIONCOLOR_POLLUTION[0] && 
               fishCurrentColColor[1] === COLLISIONCOLOR_POLLUTION[1] && 
@@ -70,6 +71,14 @@ class Fish extends Ship {
         this._timeSinceEnteredGrass = millis();
       }
       return grass || dam;
+    }
+
+    checkColorCollisionHook(fishCurrentColColor) {
+      let hook = fishCurrentColColor[0] === COLLISIONCOLOR_HOOK[0] && 
+              fishCurrentColColor[1] === COLLISIONCOLOR_HOOK[1] && 
+              fishCurrentColColor[2] === COLLISIONCOLOR_HOOK[2] &&
+              fishCurrentColColor[3] === COLLISIONCOLOR_HOOK[3];
+      return hook;
     }
     
     // Bruh!
@@ -97,21 +106,36 @@ class Fish extends Ship {
         this.stop();
         this.backup();
       }
-      
-      if (this.checkColorCollisionPollution()) {
+      let fishCurrentColor = this.getCurrentFishCollisionColor();
+      if (this.checkColorCollisionPollution(fishCurrentColor)) {
         console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
         this._polluted = true;
         this.setBoostRate(this._pollutedBoostRate);
         this.changeSpriteSick();
       }
+
+      if (this.checkColorCollisionHook(fishCurrentColor)) {
+        console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
+        push();
+        translate(this.pos.x, this.pos.y);
+        rotate(this.heading + PI/4);
+        pop();
+        this.vel = createVector(0, -4);
+        this.snatched = true;
+        this.boosting(false);
+      }
     }
     
     turnRight() {
-      this.setRotation(this._turnRate);
+      if (!this.snatched) {
+        this.setRotation(this._turnRate);
+      }
     }
     
     turnLeft() {
-      this.setRotation(-this._turnRate);
+      if (!this.snatched) {
+        this.setRotation(-this._turnRate);
+      }
     }
     
     stopTurning() {
