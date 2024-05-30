@@ -26,6 +26,7 @@ let _isTurningKeys = false; // if the a and d keys are being used to turn.
 // beholder.js
 let marker0;
 let marker1;
+let marker2;
 let _lastPosHammer = 0; // marker 0 position
 let _lastRotHammer = 0; // marker 0 rotation. THIS IS IN RADIANS
 let _lastPosBrush = 0; // marker 1
@@ -48,6 +49,7 @@ let _fishes = [];
 
 // pollution
 let pollution = [];
+let fishermen = [];
 
 let factsArr = [];
 let fact;
@@ -58,6 +60,9 @@ let backdropIm;
 let fishLadderIm;
 let salmonSprite_normal;
 let salmonSprite_sick;
+let salmonSprite_dead;
+let scrub_sound;
+let fishermanIm;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -65,6 +70,8 @@ function preload() {
   fishLadderIm = loadImage("resources/fishladder.png");
   salmonSprite_normal = loadImage("resources/salmon.png");
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
+  salmonSprite_dead = loadImage("resources/salmon_dead.png");
+  fishermanIm = loadImage("resources/fisherman.png");
 }
 
 function spawnSalmon() {
@@ -77,7 +84,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
     _fishes.push(curFish);
   }
 }
@@ -108,7 +115,7 @@ function setup() {
   factSound = createAudio('Quiz-Buzzer01-1.mp3');
 
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
   spawnSalmon();
   console.log(_fishes);
   pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
@@ -118,6 +125,10 @@ function setup() {
   pollution.push(new Pollution(2300, 180, 60));
   pollution.push(new Pollution(2500, 130, 60));
   pollution.push(new Pollution(2600, 200, 60));
+
+  // fishermen
+  fishermen.push(new Fisherman(400, 50, fishermanIm));
+
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -139,6 +150,7 @@ function draw() {
   // beholder updates before all code in draw()
   marker0 = p5beholder.getMarker(0);
   marker1 = p5beholder.getMarker(1);
+  marker2 = p5beholder.getMarker(2);
   
   clear();
   background("lightblue");
@@ -194,8 +206,8 @@ function draw() {
     _lastRotHammer = rot;
     // _lastPosHammer.x = width - pos.x;
   }
-  if (marker1.present) {
-    let pos = p5beholder.cameraToCanvasVector(marker1.center);
+  if (marker2.present) {
+    let pos = p5beholder.cameraToCanvasVector(marker2.center);
     _lastPosBrush = pos;
     // _lastPosBrush.x = width - pos.x;
   }
@@ -214,8 +226,13 @@ function draw() {
   rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
   pop();
 
+  // draw obstacles
   for (let p = 0; p < pollution.length; p++) {
     pollution[p].draw();
+  }
+
+  for (let f = 0; f < fishermen.length; f++) {
+    fishermen[f].draw();
   }
 
   // console.log(fishCurrentColColor)
@@ -236,6 +253,7 @@ function draw() {
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     salmon.checkOOB();
+    salmon.checkDead();
     salmon.render();
     salmon.drawSprite();
     salmon.turn();
@@ -243,6 +261,7 @@ function draw() {
   }  
   
   fish.checkOOB();
+  fish.checkDead();
   fish.render();
   fish.drawSprite();
   fish.turn();
@@ -310,7 +329,7 @@ function input() {
   // "d"
   if (keyIsDown(68)) {
     _isTurningKeys = true;
-    fish.setRotation(0.1)
+    fish.turnRight();
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
       salmon.turnRight();
@@ -318,7 +337,7 @@ function input() {
     // "a"
   } else if (keyIsDown(65)) {
     _isTurningKeys = true;
-    fish.setRotation(-0.1)
+    fish.turnLeft();
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
       salmon.turnLeft();
@@ -350,6 +369,11 @@ function input() {
         salmon.stopSwim();
       }
     }
+  }
+  
+  // 'spacebar'
+  if (keyIsDown(32)){
+    handleSerialScrub("0.9");
   }
 }
 
@@ -490,20 +514,14 @@ function handleSerialSalmon(valuesString) {
  * @param {String[]} valuesString 
  */
 function handleSerialScrub(valuesString) {
-  // console.log(values);
-  const values = valuesString.split(',');
-
-  // TODO
-  // separate out the shake value
-  // let shakeVal = parseFloat(newData.split(":")[1]); // separate out the actual shake val
-  // for (let p = 0; p < polluteNum; p++) {
-  //   if (pollution[p].brush_collide(_lastPosBrush)) {
-  //     console.log("should attempt to clean!")
-  //     pollution[p].clean_particle(shakeVal);
-  //     break;
-  //   } 
-  // }
-
+ let shakeVal = parseFloat(valuesString);
+  for (let p = 0; p < pollution.length; p++) {
+    if (pollution[p].brush_collide(_lastPosBrush)) {
+      console.log("should attempt to clean!")
+      pollution[p].clean_particle(shakeVal);
+      break;
+    } 
+  }
 }
 
 /**
