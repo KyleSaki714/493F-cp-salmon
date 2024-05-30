@@ -198,9 +198,6 @@ void salmon() {
 // write data for scrub controller. format:
 // scrub: TODO
 void scrub() {
-  // long t = millis();
-  // if (t % 300 == 0) {
-    //put your main code here, to run repeatedly:
     sensors_event_t event;
     lis.getEvent(&event);
 
@@ -213,11 +210,10 @@ void scrub() {
     shake /= 50; // experimentally determined higher end of shake vector magnitude
     filter_shake = shake * (filter_coeff) + filter_shake * (1- filter_coeff); // low pass filter
     filter_shake = constrain(filter_shake, 0.0, 1.0);
-    // // if (filter_shake > 0.1) {
+    if (filter_shake > 0.1) {
       Serial.print("scrub:");
       Serial.print(filter_shake);
-    // // }
-  // }
+    }
 }
 
 // write data for hammer controller. format:

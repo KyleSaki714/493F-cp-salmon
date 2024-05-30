@@ -65,6 +65,8 @@ let salmonSprite_dead;
 let scrub_sound;
 let fishermanIm;
 
+let gameStarted;
+
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
   backdropIm = loadImage("resources/testriver_3012_480_scrolling_balllardlocks.png");
@@ -130,6 +132,7 @@ function setup() {
   // fishermen
   fishermen.push(new Fisherman(400, 50, fishermanIm));
 
+  gameStarted = false;
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -147,6 +150,38 @@ function setup() {
 
 
 function draw() {
+  // Start menu
+  if (!gameStarted) {
+    fill(color("#00b4d8"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("SALMON SAVIOR", 300, 200, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#00b4d8"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
+    textSize(20);
+    text("Press 'a' to start", 300, 400, 300, 300);
+    image(salmonSprite_normal, 50, 50);
+    image(salmonSprite_normal, 300, 300);
+    image(salmonSprite_normal, 90, 250);
+    image(salmonSprite_normal, 75, 400);
+    image(salmonSprite_normal, 500, 150);
+    image(salmonSprite_sick, 480, 403);
+    image(salmonSprite_dead, 530, 50);
+
+
+
+    if (keyIsDown(65)) { // press a to start
+      gameStarted = true;
+    }
+  }
+  else {
+  
   rect(0, 0, 100, 50);
   // beholder updates before all code in draw()
   marker0 = p5beholder.getMarker(0);
@@ -234,6 +269,8 @@ function draw() {
   }
 
   for (let f = 0; f < fishermen.length; f++) {
+    fishermen[f].checkColorCollisionGrass(scrollval);
+    fishermen[f].scrollX(fishermen[f].getSpeed());
     fishermen[f].draw();
   }
 
@@ -311,6 +348,7 @@ function draw() {
   
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));
+  }
 }
 
 function input() {

@@ -21,6 +21,8 @@ class FunFact extends Shape {
         fill('white');
         rect(this.xpos, this.ypos, this.width, this. height, 20);
         fill('black');
+        textStyle(BOLD);
+        textSize(10);
         text(this.fact, this.xpos, this.ypos+10, this.width-30, this.height);
     }
 
