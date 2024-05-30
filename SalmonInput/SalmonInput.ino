@@ -196,8 +196,6 @@ void salmon() {
 // write data for scrub controller. format:
 // scrub: TODO
 void scrub() {
-  long t = millis();
-  if (t % 300 == 0) {
     // put your main code here, to run repeatedly:
     sensors_event_t event;
     lis.getEvent(&event);
@@ -215,7 +213,6 @@ void scrub() {
       Serial.print("scrub:");
       Serial.print(filter_shake);
     }
-  }
 }
 
 // write data for hammer controller. format:
