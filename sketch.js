@@ -209,6 +209,8 @@ function draw() {
   }
 
   for (let f = 0; f < fishermen.length; f++) {
+    fishermen[f].checkColorCollisionGrass(scrollval);
+    fishermen[f].scrollX(fishermen[f].getSpeed());
     fishermen[f].draw();
   }
 
