@@ -54,6 +54,7 @@ let backdropIm;
 let fishLadderIm;
 let salmonSprite_normal;
 let salmonSprite_sick;
+let salmonSprite_dead;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -61,6 +62,7 @@ function preload() {
   fishLadderIm = loadImage("resources/fishladder.png");
   salmonSprite_normal = loadImage("resources/salmon.png");
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
+  salmonSprite_dead = loadImage("resources/salmon_dead.png");
 }
 
 function spawnSalmon() {
@@ -73,7 +75,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
     _fishes.push(curFish);
   }
 }
@@ -88,7 +90,7 @@ function setup() {
   SALMON_SPAWNPOINT_Y = height / 2;
   
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
   spawnSalmon();
   console.log(_fishes);
   pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
@@ -215,6 +217,7 @@ function draw() {
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     salmon.checkOOB();
+    salmon.checkDead();
     salmon.render();
     salmon.drawSprite();
     salmon.turn();
@@ -222,6 +225,7 @@ function draw() {
   }  
   
   fish.checkOOB();
+  fish.checkDead();
   fish.render();
   fish.drawSprite();
   fish.turn();
@@ -258,7 +262,7 @@ function input() {
   // "d"
   if (keyIsDown(68)) {
     _isTurningKeys = true;
-    fish.setRotation(0.1)
+    fish.turnRight();
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
       salmon.turnRight();
@@ -266,7 +270,7 @@ function input() {
     // "a"
   } else if (keyIsDown(65)) {
     _isTurningKeys = true;
-    fish.setRotation(-0.1)
+    fish.turnLeft();
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
       salmon.turnLeft();
