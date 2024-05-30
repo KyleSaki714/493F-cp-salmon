@@ -49,6 +49,10 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // Used for hardware & software SPI
 #define LIS3DH_CS 10
 
+#define REDPIN A2
+#define GREENPIN A1
+#define BLUEPIN A0
+
 // software SPI
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
 // hardware SPI
@@ -148,9 +152,18 @@ void setup(void) {
     case LIS3DH_DATARATE_LOWPOWER_5KHZ: Serial.println("5 Khz Low Power"); break;
     case LIS3DH_DATARATE_LOWPOWER_1K6HZ: Serial.println("16 Khz Low Power"); break;
   }
+
+  pinMode(REDPIN, OUTPUT);
+  pinMode(GREENPIN, OUTPUT);
+  pinMode(BLUEPIN, OUTPUT);
+
+  analogWrite(REDPIN, 0);
+  analogWrite(GREENPIN, 0);
+  analogWrite(BLUEPIN, 0);
 }
 
 void loop() {
+  health();
 
   // write all 3 controller data, delimited by "|"
   salmon();
@@ -161,6 +174,7 @@ void loop() {
   hammer();
 
   Serial.println();
+
   delay(10);
 }
 
@@ -222,3 +236,48 @@ void hammer() {
   Serial.print("hammer:");
 }
 
+void health() {
+  if (Serial.available() > 0) {
+    String rcvdSerialData = Serial.readStringUntil('\n'); 
+    int fish = rcvdSerialData.toInt();
+    
+    switch(fish) {
+      case 7:
+        analogWrite(REDPIN, 0);
+        analogWrite(GREENPIN, 255);
+        break;
+      case 6: 
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 255);
+        break;
+      case 5:
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 120);
+        break;
+      case 4: 
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 60);
+        break;
+      case 3:
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 35);
+        break;
+      case 2: 
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 15);
+        break;
+      case 1:
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 5);
+        break;
+      case 0: 
+        analogWrite(REDPIN, 255);
+        analogWrite(GREENPIN, 0);
+        break;
+      default:
+        analogWrite(REDPIN, 0);
+        analogWrite(GREENPIN, 0);
+        analogWrite(BLUEPIN, 0);
+    }
+  }
+}
