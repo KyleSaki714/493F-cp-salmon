@@ -64,6 +64,10 @@ class Shape {
       y >= this.y && // check within top edge
       y <= (this.y + this.height); // check within bottom edge
   }
+  scrollX(val) {
+    this.xpos += val;
+  }
+  
 }
 
 class Circle extends Shape {
@@ -87,9 +91,5 @@ class Circle extends Shape {
     fill(this.fillColor);
     ellipse(this.xpos, this.ypos, this.width);
     pop();
-  }
-
-  scrollX(val) {
-    this.xpos += val;
   }
 }
