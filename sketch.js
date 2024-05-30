@@ -49,6 +49,10 @@ let _fishes = [];
 // pollution
 let pollution = [];
 
+let factsArr = [];
+let fact;
+let factSound;
+
 // images for preload 
 let backdropIm;
 let fishLadderIm;
@@ -86,7 +90,23 @@ function setup() {
   // spawnpoint declarations are init in setup because height and width of canvas is variable.
   SALMON_SPAWNPOINT_X = width * 0.2;
   SALMON_SPAWNPOINT_Y = height / 2;
+
+  // fact = new FunFact(700, 100, 150, 150, "Metals and pesticides are toxic to" +
+  // "the salmon nervous system, so if a body of " + 
+  // "water is contaminated with them, it disrupts " +
+  // "feeding and predator avoidance of salmon.");
+  factsArr.push(new FunFact(700, 100, 150, 150, "Metals and pesticides are toxic to " +
+  "the salmon nervous system, so if a body of " + 
+  "water is contaminated with them, it disrupts " +
+  "feeding and predator avoidance of salmon."));
+
+  factsArr.push(new FunFact(2200, 250, 150, 150, "Copper, a stormwater contaminant, impairs salmon's ability to detect odors, which salmon use to return back to spawn as well as prey detection."))
   
+  factsArr.push(new FunFact(3000, 250, 180, 180, "Since salmon are high on the food chain in rivers, will have higher concentrations of toxic substances due to taking in more contaminated food, water, and air than organisms lower on the the food chain."))
+
+  factsArr.push(new FunFact(6000, 250, 160, 180, "Salmon rely on snow on mountains to melt and bring cool, clean water into the rivers during summer. Rising temperatures mean less snow, which result in less cool water, threatening salmon life."))
+  factSound = createAudio('Quiz-Buzzer01-1.mp3');
+
   // one middle fish
   fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick);
   spawnSalmon();
@@ -115,6 +135,7 @@ function setup() {
 
 
 function draw() {
+  rect(0, 0, 100, 50);
   // beholder updates before all code in draw()
   marker0 = p5beholder.getMarker(0);
   marker1 = p5beholder.getMarker(1);
@@ -226,6 +247,37 @@ function draw() {
   fish.drawSprite();
   fish.turn();
   fish.update();
+
+  if (-300 > _river.pos.x) {
+   factsArr[0].draw();
+   if (-310 <_river.pos.x) {
+    factSound.play();
+   }
+  }
+  if (-1500 > _river.pos.x) {
+    factsArr[1].draw();
+    if (-1510 <_river.pos.x) {
+      factSound.play();
+     }
+  }
+  if (-2500 > _river.pos.x) {
+    factsArr[2].draw();
+    if (-2510 <_river.pos.x) {
+      factSound.play();
+     }
+  }
+  if (-5000 > _river.pos.x) {
+    factsArr[3].draw();
+    if (-5010 <_river.pos.x) {
+      factSound.play();
+     }
+  }
+  factsArr[0].scrollX(scrollval);
+  factsArr[1].scrollX(scrollval);
+  factsArr[2].scrollX(scrollval);
+  factsArr[3].scrollX(scrollval);
+
+
   
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));
