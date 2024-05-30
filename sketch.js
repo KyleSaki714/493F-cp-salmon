@@ -159,13 +159,21 @@ function draw() {
     textSize(80);
     textAlign(CENTER);
     text("SALMON SAVIOR", 300, 200, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#00b4d8"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
     textSize(20);
     text("Press 'a' to start", 300, 400, 300, 300);
     image(salmonSprite_normal, 50, 50);
     image(salmonSprite_normal, 300, 300);
-    image(salmonSprite_normal, 150, 250);
+    image(salmonSprite_normal, 90, 250);
     image(salmonSprite_normal, 75, 400);
     image(salmonSprite_normal, 500, 150);
+    image(salmonSprite_sick, 480, 403);
+    image(salmonSprite_dead, 530, 50);
+
+
 
     if (keyIsDown(65)) { // press a to start
       gameStarted = true;
