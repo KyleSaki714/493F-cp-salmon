@@ -13,6 +13,7 @@ class Fish extends Ship {
       this._swimCooldown = 900;
       this._poisonedTimeStart = undefined;
       this._isDead = false;
+      this._firstDeath = true;
       this._turnRate = turnRate;
       this._polluted = false;
       this._pollutedBoostRate = boostRate * boostRateDebuff; // reduction in boost
@@ -92,6 +93,10 @@ class Fish extends Ship {
           this.changeSpriteDead();
         }
       }
+    }
+
+    deathTrackLED() {
+      this._firstDeath = false;
     }
     
     /**

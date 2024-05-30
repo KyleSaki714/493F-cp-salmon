@@ -46,6 +46,7 @@ const SALMON_BOOSTRATE = 2;
 const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
+let fishAlive = 7;
 
 // pollution
 let pollution = [];
@@ -156,6 +157,7 @@ function draw() {
   background("lightblue");
     
   input();
+  output();
 
   let scrollval = -0.5; // default -0.5?
   // stop scrolling river
@@ -258,10 +260,19 @@ function draw() {
     salmon.drawSprite();
     salmon.turn();
     salmon.update();
+    if (salmon._isDead && salmon._firstDeath) {
+      fishAlive -= 1;
+      salmon.deathTrackLED();
+    }
   }  
   
   fish.checkOOB();
   fish.checkDead();
+  if (fish._isDead && fish._firstDeath) {
+    fishAlive -= 1;
+    fish.deathTrackLED();
+  }
+  
   fish.render();
   fish.drawSprite();
   fish.turn();
@@ -374,6 +385,12 @@ function input() {
   // 'spacebar'
   if (keyIsDown(32)){
     handleSerialScrub("0.9");
+  }
+}
+
+function output() {
+  if (serial.isOpen()) {
+    serial.writeLine(fishAlive);
   }
 }
 
