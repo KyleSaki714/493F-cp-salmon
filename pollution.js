@@ -11,7 +11,7 @@ class Pollution extends Shape {
   constructor(x, y, w) {
     super(x, y, w, w);
     // random num of particles within radius
-    this.num_particles = int(random(4, this.width/5));
+    this.num_particles = int(random(this.width/10, this.width/5));
     this.particles = [];
     this.br
     print(this.num_particles);
@@ -19,6 +19,7 @@ class Pollution extends Shape {
     for (let i = 0; i < this.num_particles; i++) {
       this.particles.push(new Circle(this.xpos + int(random(0, this.width)), this.ypos + int(random(0,this.width)), int(random(8, 15)), color(0,100, 100)));
     }
+    this.scrub_sound = loadSound('sound/brush-scrubbing.mp3');
   }
 
   draw() {
@@ -55,6 +56,12 @@ class Pollution extends Shape {
     if (this.num_particles > 0) {
       if (Math.random() < threshold) {
         this.num_particles--; // erase a particle
+        if (!this.scrub_sound.isPlaying()) {
+          this.scrub_sound.play();
+        }
+      }
+      if (this.num_particles == 0) {
+        this.scrub_sound.stop();
       }
     }
   }
