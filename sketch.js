@@ -54,11 +54,8 @@ const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
 let fishAlive = 7;
-<<<<<<< HEAD
 let mainFishCaught = false;
-=======
 let lastFishAlive = fishAlive;
->>>>>>> b2b7452881bb06bca9e10f6dfcbb74c4d75531c7
 
 // pollution
 let pollution = [];
