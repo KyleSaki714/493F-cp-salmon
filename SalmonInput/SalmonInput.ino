@@ -12,7 +12,24 @@
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
 
-// ----------------------- GYRO / SALMON CONTROLLER INIT ----------------------- 
+// ----------------------- JOYSTICK, VIBRO, LED INIT ----------------------- 
+
+const int JOYSTICKY_PIN = A0;
+const int JOYSTICKX_PIN = A1;
+const int JOYSTICKBTN_PIN = 9;
+
+const int VIBROPIN = 10;
+
+const int redPin = 11;
+const int greenPin = 12;
+const int bluePin = 13;
+
+// chatGPT code
+const unsigned long onTime = 200; // Vibromotor on duration in milliseconds
+unsigned long previousMillis = 0; // Stores the last time the vibromotor was updated
+bool vibromotorOn = false; // Current state of the vibromotor
+
+// ----------------------- GYRO CONTROLLER INIT ----------------------- 
 
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
@@ -76,6 +93,22 @@ unsigned long debounceDelay = 40;
 
 void setup(void) {
   delay(500);
+
+  // JOYSTICK BUTTON
+  pinMode(JOYSTICKBTN_PIN, INPUT_PULLUP);
+
+  // LEDS
+  // Set the RGB LED pins as outputs
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  pinMode(VIBROPIN, OUTPUT);
+
+  analogWrite(redPin, 0);
+  analogWrite(greenPin, 0);
+  analogWrite(bluePin, 0);
+
+
   // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
       Wire.begin();
@@ -139,7 +172,7 @@ void setup(void) {
 
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
     Serial.println("Couldnt start");
-    while (1) yield();
+    // while (1) yield();
   }
   Serial.println("LIS3DH found!");
 
@@ -177,10 +210,24 @@ void setup(void) {
 }
 
 void loop() {
+  // read salmon health
   health();
 
   // write all 3 controller data, delimited by "|"
   salmon();
+
+  // JOYSTICK 
+  Serial.print(",");
+  float yval = analogRead(JOYSTICKY_PIN) / (float) 4095;
+  float xval = analogRead(JOYSTICKX_PIN) / (float) 4095;
+  Serial.print(yval);
+  Serial.print(",");
+  Serial.print(xval);
+  Serial.print(",");
+  int joystickPressVal = digitalRead(JOYSTICKBTN_PIN);
+  joystickPressVal = !joystickPressVal;
+  Serial.print(joystickPressVal);
+
   Serial.print("|");
 
   scrub();
@@ -272,48 +319,73 @@ void hammer() {
   return btnPressed;
 }
 
+// Handles vibration and leds for salmon health
+// reads from serial in.
 void health() {
+  unsigned long currentMillis = millis(); // Get the current time
+
+  // if the vibromotor is on for its whole duration, turn it off
+  if (vibromotorOn && (currentMillis - previousMillis >= onTime)) {
+    previousMillis = currentMillis;
+    vibromotorOn = false;
+    digitalWrite(VIBROPIN, LOW);
+  }
+
   if (Serial.available() > 0) {
     String rcvdSerialData = Serial.readStringUntil('\n'); 
-    int fish = rcvdSerialData.toInt();
-    
-    switch(fish) {
-      case 7:
-        analogWrite(REDPIN, 0);
-        analogWrite(GREENPIN, 255);
-        break;
-      case 6: 
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 255);
-        break;
-      case 5:
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 120);
-        break;
-      case 4: 
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 60);
-        break;
-      case 3:
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 35);
-        break;
-      case 2: 
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 15);
-        break;
-      case 1:
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 5);
-        break;
-      case 0: 
-        analogWrite(REDPIN, 255);
-        analogWrite(GREENPIN, 0);
-        break;
-      default:
-        analogWrite(REDPIN, 0);
-        analogWrite(GREENPIN, 0);
-        analogWrite(BLUEPIN, 0);
+
+    int indexOfComma = rcvdSerialData.indexOf(',');
+    if(indexOfComma != -1){
+      String strFishAlive = rcvdSerialData.substring(0, indexOfComma);
+      int fish = strFishAlive.toInt();
+
+      String strBump = rcvdSerialData.substring(indexOfComma + 1, rcvdSerialData.length());
+      int bump = strBump.toInt();
+
+      if (bump == 1) {
+        previousMillis = currentMillis;
+        vibromotorOn = true;
+        digitalWrite(VIBROPIN, HIGH);
+      }
+
+      switch(fish) {
+        case 7:
+          analogWrite(redPin, 0);
+          analogWrite(greenPin, 255);
+          break;
+        case 6: 
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 255);
+          break;
+        case 5:
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 120);
+          break;
+        case 4: 
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 80);
+          break;
+        case 3:
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 35);
+          break;
+        case 2: 
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 15);
+          break;
+        case 1:
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 5);
+          break;
+        case 0: 
+          analogWrite(redPin, 255);
+          analogWrite(greenPin, 0);
+          break;
+        default:
+          analogWrite(redPin, 0);
+          analogWrite(greenPin, 0);
+          analogWrite(bluePin, 0);
+      }
     }
   }
 }

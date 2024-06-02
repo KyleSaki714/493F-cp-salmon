@@ -36,7 +36,7 @@ class Pollution extends Shape {
   }
 
   brush_collide(brush_pos) {
-    console.log(brush_pos + " " + this.xpos + " " + this.ypos + " " + this.width + this.getRight());
+    // console.log(brush_pos + " " + this.xpos + " " + this.ypos + " " + this.width + this.getRight());
     let collision = this.xpos <= brush_pos.x && brush_pos.x <= this.getRight() && this.ypos <= brush_pos.y && brush_pos.y <= this.getBottom();
     if (collision) {
       push()

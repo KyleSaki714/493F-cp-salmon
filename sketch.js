@@ -14,6 +14,7 @@
 // this code adapted from Prof. Froehlich's Cookie Monster Game: https://editor.p5js.org/jonfroehlich/sketches/oUIeXC9sS
 
 // salmon controller serial
+let SERIAL_CONNECTED = false; // true when onSerialConnectionOpened is called.
 let serialOptions = { baudRate: 115200  };
 let serial;
 let turnAngle;
@@ -22,6 +23,9 @@ let _lastSwimAngle = 0; // previous angle a swim was triggered. initially set to
 const SWIM_DIST_THRESH = 2; // how much salmon controller needs to turn to execute a swim. 
 let _isTurningMotion = false; // if the salmon controller is being used to turn.
 let _isTurningKeys = false; // if the a and d keys are being used to turn.
+let joystickBtn = 0;
+const VIBRATION_COOLDOWN = 1500;
+let lastVibration = 0; // time of last vibration
 
 // beholder.js
 let marker0;
@@ -50,7 +54,11 @@ const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
 let fishAlive = 7;
+<<<<<<< HEAD
 let mainFishCaught = false;
+=======
+let lastFishAlive = fishAlive;
+>>>>>>> b2b7452881bb06bca9e10f6dfcbb74c4d75531c7
 
 // pollution
 let pollution = [];
@@ -184,7 +192,7 @@ function draw() {
 
 
 
-    if (keyIsDown(65)) { // press a to start
+    if (keyIsDown(65) || joystickBtn) { // press a to start
       gameStarted = true;
     }
   }
@@ -289,18 +297,31 @@ function draw() {
     fishermen[f].scrollX(fishermen[f].getSpeed());
     fishermen[f].draw();
   }
-
+  
   // console.log(fishCurrentColColor)
+  let collisions = createVector(0,0,0);
   if (!mainFishCaught) {
-    mainFishCaught = fish.checkGameCollision(fishermen[0]);
+    mainFishColl = fish.checkGameCollision(fishermen[0]);
+    collisions.add(createVector(mainFishColl[0], mainFishColl[1], mainFishColl[2]));
+    mainFishCaught = mainFishColl[3];
   }
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    let caught = salmon.checkGameCollision(fishermen[0]);
+    let collisionArray = salmon.checkGameCollision(fishermen[0]);
+    let caught = collisionArray[4];
     if (caught) {
       salmon.splice(i); // remove this fish... now going to the fisherman
+    } else {
+      collisions.add(createVector(collisionArray[0], collisionArray[1], collisionArray[2]));
     }
   }
+  
+  // vibration: if any fish collided, and able to vibrate, send a 1,1
+  if (collisions.mag() > 0 && (millis() - lastVibration) > VIBRATION_COOLDOWN) {
+    lastVibration = millis();
+    serial.writeLine("0,1");
+  }
+  
   // FISH LADDER PLACEMENT
   // if L is pressed and cooldown ok
 
@@ -310,18 +331,16 @@ function draw() {
     
   }
   
+  let deathsThisFrame = 0;
+  
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     salmon.checkOOB();
-    salmon.checkDead();
+    deathsThisFrame += salmon.checkDead();
     salmon.render();
     salmon.drawSprite();
     salmon.turn();
     salmon.update();
-    if (salmon._isDead && salmon._firstDeath) {
-      fishAlive -= 1;
-      salmon.deathTrackLED();
-    }
   }  
 
   // if (_fishes[0].isDead() && _fishes[1].isDead() &&
@@ -342,14 +361,18 @@ function draw() {
     }
   }
   
+  deathsThisFrame += fish.checkDead();
+  
+  if (deathsThisFrame > 0) {
+    fishAlive -= deathsThisFrame;
+    if (fishAlive != lastFishAlive) {
+      serial.writeLine(fishAlive + ",1");
+      // console.log(fishAlive + ",1")
+    }
+  }
+  
   if (!mainFishCaught) {
     fish.checkOOB();
-    fish.checkDead();
-    if (fish._isDead && fish._firstDeath) {
-      fishAlive -= 1;
-      fish.deathTrackLED();
-    }
-    
     fish.render();
     fish.drawSprite();
     fish.turn();
@@ -508,7 +531,7 @@ function input() {
 
 function output() {
   if (serial.isOpen()) {
-    serial.writeLine(fishAlive);
+    serial.writeLine(fishAlive + ",0");
   }
 }
 
@@ -518,6 +541,7 @@ function onSerialErrorOccurred(eventSender, error) {
 
 function onSerialConnectionOpened(eventSender) {
   console.log("onSerialConnectionOpened");
+  SERIAL_CONNECTED = true;
 }
 
 function onSerialConnectionClosed(eventSender) {
@@ -540,108 +564,73 @@ function handleSerialSalmon(valuesString) {
   const accelerationX = parseFloat(values[3]);
   const accelerationY = parseFloat(values[4]);
   const accelerationZ = parseFloat(values[5]);
+  const joystickY = parseFloat(values[6]);
+  const joystickX = parseFloat(values[7]);
+  joystickBtn = parseInt(values[8]);
 
-  console.log(yaw);
+  // console.log(yaw);
+  let joyx_normneg = (joystickX * 2.0) - 1.0;
+  let joyy_normneg = (joystickY * 2.0) - 1.0;
+  
+  // NOT USING THE X AXIS? JUST TESTING IT FOR NOW 
+  if (SERIAL_CONNECTED && abs(joyx_normneg) > 0.1) {
+    console.log("joyx_normneg " + joyx_normneg);
+    
+    let force = p5.Vector.fromAngle(fish.heading);
+    force.mult(joyx_normneg * 0.1);
+    fish.joystickAddForce(force);
+    
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      let forceSalmon = p5.Vector.fromAngle(salmon.heading);
+      forceSalmon.mult(joyx_normneg * 0.1);
+      salmon.joystickAddForce(forceSalmon);
+    }
+  }
+  
+  // JOYSTICK Y AXIS: SALMON ROTATE
+  if (SERIAL_CONNECTED && joyy_normneg && abs(joyy_normneg) > 0.1) { // drift
+    console.log("joyy_normneg " + joyy_normneg);
+    _isTurningMotion = true;
+    let rotValue = joyy_normneg * SALMON_TURNRATE;
+    fish.joystickSetRotation(rotValue)
 
-  // TODO: (old acceleromter code)  
-  // let startIndex = 0;
-  // let endIndex = newData.indexOf(",");
-  // if(endIndex != -1){
-  //   // Parse x location (normalized between 0 and 1)
-  //   let strBrushXFraction = newData.substring(startIndex, endIndex).trim();
-  //   let xFraction = parseFloat(strBrushXFraction);
-  //   // console.log("x: " + xFraction);
-    
-  //   // Parse y location (normalized between 0 and 1)
-  //   startIndex = endIndex + 1;
-  //   endIndex = newData.length;
-  //   let strBrushYFraction = newData.substring(startIndex, endIndex).trim();
-  //   let yFraction = parseFloat(strBrushYFraction);
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.joystickSetRotation(rotValue);
+      
+    }
+  }
+  // both joysticks are in 0 position
+  if (SERIAL_CONNECTED && abs(joyy_normneg) < 0.1 && abs(joyx_normneg) < 0.1) {
+    _isTurningMotion = false;
+  }
+  if (SERIAL_CONNECTED && joystickBtn) {
+    console.log("joystickBtn " + joystickBtn);
+  }
 
-  //   // console.log("y: " + yFraction);
-  //   turnAngle = newData.substring(startIndex, endIndex).trim();
-  //   const angleArr = turnAngle.split(",");
-  //   const zFraction = parseFloat(angleArr[1]);
-  //   // console.log("z: " + zFraction);
-  //   // console.log(zFraction);
-
-  //   //turns
-  //   let rotValue = (xFraction / 9.8) * 0.1;
-  //   if (xFraction > 5.0) {
-  //     _isTurningMotion = true;
-  //     fish.setRotation(rotValue)
-  //   } else if (xFraction < -5.0) {
-  //     _isTurningMotion = true;
-  //     fish.setRotation(rotValue)
-  //   } else {
-  //     _isTurningMotion = false;
-  //   }
-    
-  //   // if (_prevYPolarity && xFraction > 0) {
-  //   //   //bgy += 5;
-  //   //   if (fish.canSwim()) {
-  //   //     // console.log("swimming");
-  //   //     fish.swim();
-  //   //   } else {
-  //   //     // console.log("not swimming");
-  //   //     fish.stopSwim();
-  //   //   }
-  //   //   //_prevYPolarity = false;
-  //   // }
-  //   // else if(!_prevYPolarity && xFraction < 0) {
-  //   //   //bgy += 5;
-  //   //   if (fish.canSwim()) {
-  //   //     fish.swim();
-  //   //   } else {
-  //   //     fish.stopSwim();
-  //   //   }
-  //   //   //_prevYPolarity = true;
-  //   // }
-    
-  //   // swimming
-  //   let distFromLastSwim = Math.abs(yFraction - _lastSwimAngle);
-  //   if (distFromLastSwim > SWIM_DIST_THRESH) {
-  //     if (fish.canSwim()) {
-  //       fish.swim();
-  //       console.log("Swim");
-  //     }
-  //     for (let i = 0; i < _fishes.length; i++) {
-  //       let salmon = _fishes[i];
-  //       if (salmon.canSwim()) {
-  //         salmon.swim();
-  //       }
-  //     }
-  //     _lastSwimAngle = yFraction;
-  //   } else {
-  //     fish.stopSwim();
-  //     for (let i = 0; i < _fishes.length; i++) {
-  //       let salmon = _fishes[i];
-  //       salmon.stopSwim();
-  //     }
-  //   }
-    
-  //   // let curYpolarity = yFraction > 0;
-  //   // if (curYpolarity != _prevYPolarity) {
-  //   //   if (fish.canSwim()) {
-  //   //     fish.swim();
-  //   //     // console.log("Swim" + fish.pos);
-  //   //   }
-  //   // } else {
-  //   //   fish.stopSwim();
-  //   // }
-    
-    
-  //   // toggle polarity 
-  //   // if (yFraction > 0) {
-  //   //   _prevYPolarity = true;
-  //   //   // console.log(_prevYPolarity);
-  //   // } else if (yFraction <= 0) {
-  //   //   _prevYPolarity = false;
-  //   //   // console.log(_prevYPolarity);
-  //   // }
-    
-  // }
-
+  // swimming
+  // let distFromLastSwim = Math.abs(yFraction - _lastSwimAngle);
+  let distFromLastSwim = Math.abs(yaw - _lastSwimAngle);
+  if (distFromLastSwim > SWIM_DIST_THRESH) {
+    if (fish.canSwim()) {
+      fish.swim();
+      console.log("Swim");
+    }
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      if (salmon.canSwim()) {
+        salmon.swim();
+      }
+    }
+    _lastSwimAngle = yaw;
+  } else {
+    fish.stopSwim();
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.stopSwim();
+    }
+  }
 }
 
 /**
