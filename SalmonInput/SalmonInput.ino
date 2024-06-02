@@ -12,6 +12,12 @@
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
 
+// ----------------------- JOYSTICK INIT ----------------------- 
+
+const int JOYSTICKY_PIN = A0;
+const int JOYSTICKX_PIN = A1;
+const int JOYSTICKBTN_PIN = 9;
+
 // ----------------------- GYRO / SALMON CONTROLLER INIT ----------------------- 
 
 #include "I2Cdev.h"
@@ -65,6 +71,10 @@ float filter_coeff = 0.3;
 
 void setup(void) {
   delay(500);
+
+  // JOYSTICK BUTTON
+  pinMode(JOYSTICKBTN_PIN, INPUT_PULLUP);
+
   // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
       Wire.begin();
@@ -128,7 +138,7 @@ void setup(void) {
 
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
     Serial.println("Couldnt start");
-    while (1) yield();
+    // while (1) yield();
   }
   Serial.println("LIS3DH found!");
 
@@ -163,10 +173,24 @@ void setup(void) {
 }
 
 void loop() {
+  // read salmon health
   health();
 
   // write all 3 controller data, delimited by "|"
   salmon();
+
+  // JOYSTICK 
+  Serial.print(",");
+  float yval = analogRead(JOYSTICKY_PIN) / (float) 4095;
+  float xval = analogRead(JOYSTICKX_PIN) / (float) 4095;
+  Serial.print(yval);
+  Serial.print(",");
+  Serial.print(xval);
+  Serial.print(",");
+  int joystickPressVal = digitalRead(JOYSTICKBTN_PIN);
+  joystickPressVal = !joystickPressVal;
+  Serial.print(joystickPressVal);
+
   Serial.print("|");
 
   scrub();
