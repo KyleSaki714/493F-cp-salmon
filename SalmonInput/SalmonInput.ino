@@ -53,6 +53,9 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 #define GREENPIN A1
 #define BLUEPIN A0
 
+// Hammer input
+#define HAMMER_IN 7
+
 // software SPI
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
 // hardware SPI
@@ -62,6 +65,14 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 // for scrubber:
 float filter_shake = 0.0;
 float filter_coeff = 0.3;
+
+// HAMMER: 
+// ARDUINO  EXAMPLE button debounce (https://docs.arduino.cc/built-in-examples/digital/Debounce/):
+uint8_t buttonState;
+uint8_t lastButtonState = HIGH;
+
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 40;
 
 void setup(void) {
   delay(500);
@@ -160,6 +171,9 @@ void setup(void) {
   analogWrite(REDPIN, 0);
   analogWrite(GREENPIN, 0);
   analogWrite(BLUEPIN, 0);
+
+  // HAMMER
+  pinMode(HAMMER_IN, INPUT_PULLUP);
 }
 
 void loop() {
@@ -234,6 +248,28 @@ void scrub() {
 // hammer: TODO, just one button tho
 void hammer() {
   Serial.print("hammer:");
+  long t = millis();
+  bool btnPressed = false;  // read button state
+  uint8_t read = digitalRead(HAMMER_IN);
+  // record switch change
+  if (read != lastButtonState) {
+    lastDebounceTime = t;
+  }
+  // if the switch has remained stable long enough
+  if (t - lastDebounceTime >= debounceDelay) {
+    if (read != buttonState) {
+      buttonState = read;
+      if (buttonState == LOW) {
+        // pressed down
+        btnPressed = true;
+        Serial.print(1); 
+      }
+    }
+  } else {
+    Serial.print(0);
+  }
+  lastButtonState = read;
+  return btnPressed;
 }
 
 void health() {

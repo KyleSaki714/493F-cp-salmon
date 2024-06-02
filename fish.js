@@ -199,4 +199,11 @@ class Fish extends Ship {
     isDead() {
       return this._isDead;
     }
+    scrollFishX(scrollval) {
+      if (!this.snatched) {
+        this.scrollX(scrollval)
+      }
+    }
   }
+
+    

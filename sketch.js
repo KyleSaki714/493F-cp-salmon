@@ -33,8 +33,11 @@ let _lastPosBrush = 0; // marker 1
 
 // fishladder
 const FISHLADDER_COOOLDOWNTIME = 500; // default 2500?
+const HAMMER_BUFFERTIME = 3000;
 let _fishLadders = [];
 let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
+let _hammerPressed = false;
+let _lastHammerPress = 0;
 
 // other globals
 let _river;
@@ -229,10 +232,10 @@ function draw() {
   }
 
   // scroll fish and pollution
-  fish.scrollX(scrollval);
+  fish.scrollFishX(scrollval);
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    salmon.scrollX(scrollval);
+    salmon.scrollFishX(scrollval);
   }
   for (let p = 0; p < pollution.length; p++) {
     pollution[p].scrollX(scrollval);
@@ -245,6 +248,12 @@ function draw() {
     _lastPosHammer = pos;
     let rot = marker0.rotation;
     _lastRotHammer = rot;
+    t = millis();
+    if ((t - _lastHammerPress) > HAMMER_BUFFERTIME && (t - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+      _lastFishLadderPlacedTime = millis()
+      _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+      
+    }
     // _lastPosHammer.x = width - pos.x;
   }
   if (marker2.present) {
@@ -619,9 +628,9 @@ function handleSerialScrub(valuesString) {
  * @param {String[]} valuesString 
  */
 function handleSerialHammer(valuesString) {
-  // console.log(values);
-  const values = valuesString.split(',');
-
+  if (parseInt(valueString)  == 1) { // 1 for hammer press
+    _lastHammerPress = millis();
+  }
 }
 
 function onSerialDataReceived(eventSender, newData) {
