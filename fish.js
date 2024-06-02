@@ -60,8 +60,8 @@ class Fish extends Ship {
       return pollu;
     }
     
-    checkColorCollisionGrassOrDam() {
-      let fishCurrentColColor = this.getCurrentFishCollisionColor();
+    checkColorCollisionGrassOrDam(fishCurrentColColor) {
+      
       // console.log(fishCurrentColColor);
       let grass = fishCurrentColColor[0] === COLLISIONCOLOR_GRASS[0] && 
               fishCurrentColColor[1] === COLLISIONCOLOR_GRASS[1] && 
@@ -83,7 +83,8 @@ class Fish extends Ship {
       return hook;
     }
     
-    // Bruh!
+    // returns 1 if the fish is suddenly dead. after that, 
+    // returns 0.
     checkDead() {
       // if not dead already
       if (!this._isDead) {
@@ -91,8 +92,9 @@ class Fish extends Ship {
         if (this._poisonedTimeStart) {
           pollutionPoisoned = (millis() - this._poisonedTimeStart) > SALMON_POISON_DEAD_TIME;
         }
+        let fishCurrentColor = this.getCurrentFishCollisionColor();
         
-        let squashed = this.checkColorCollisionGrassOrDam() && this.pos.x < 10;
+        let squashed = this.checkColorCollisionGrassOrDam(fishCurrentColor) && this.pos.x < 10;
         
         if (pollutionPoisoned || squashed) {
           console.log("Salmon #" + this._id + " is DED");
@@ -100,8 +102,10 @@ class Fish extends Ship {
           this.boostRate = 0;
           this._turnRate = 0;
           this.changeSpriteDead();
+          return 1
         }
       }
+      return 0
     }
 
     deathTrackLED() {
@@ -109,10 +113,15 @@ class Fish extends Ship {
     }
     
     /**
-     * Singular method to check for game collision
+     * Singular method to check for game collision.
+     * Returns a vector with collisions for corresponding objects: 
+     * 1 if there is collision, otherwise 0.
+     * grassOrDam, pollution, hook : <0, 0, 0>
      */
     checkGameCollision() {
-      if (this.checkColorCollisionGrassOrDam()) {
+      let collisions = createVector(); 
+      let fishCurrentColor = this.getCurrentFishCollisionColor();
+      if (this.checkColorCollisionGrassOrDam(fishCurrentColor)) {
         console.log("Salmon #" + this._id + " said: \"Bonk\"");
     
         // Stuck between edge and grass
@@ -127,17 +136,15 @@ class Fish extends Ship {
         }
         this.stop();
         this.backup();
-      }
-      let fishCurrentColor = this.getCurrentFishCollisionColor();
-      if (this.checkColorCollisionPollution(fishCurrentColor)) {
+        collisions.x = 1;
+      } else if (this.checkColorCollisionPollution(fishCurrentColor)) {
         console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
         this._polluted = true;
         this.setBoostRate(this._pollutedBoostRate);
         this.changeSpriteSick();
         this._poisonedTimeStart = millis();
-      }
-
-      if (this.checkColorCollisionHook(fishCurrentColor)) {
+        collisions.y = 1;
+      } else if (this.checkColorCollisionHook(fishCurrentColor)) {
         console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
         push();
         translate(this.pos.x, this.pos.y);
@@ -146,7 +153,9 @@ class Fish extends Ship {
         this.vel = createVector(0, -4);
         this.snatched = true;
         this.boosting(false);
+        collisions.z = 1;
       }
+      return collisions.copy();
     }
     
     joystickAddForce(force) {

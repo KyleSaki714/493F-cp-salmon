@@ -24,6 +24,8 @@ const SWIM_DIST_THRESH = 2; // how much salmon controller needs to turn to execu
 let _isTurningMotion = false; // if the salmon controller is being used to turn.
 let _isTurningKeys = false; // if the a and d keys are being used to turn.
 let joystickBtn = 0;
+const VIBRATION_COOLDOWN = 1500;
+let lastVibration = 0; // time of last vibration
 
 // beholder.js
 let marker0;
@@ -49,6 +51,7 @@ const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
 let fishAlive = 7;
+let lastFishAlive = fishAlive;
 
 // pollution
 let pollution = [];
@@ -275,13 +278,20 @@ function draw() {
     fishermen[f].scrollX(fishermen[f].getSpeed());
     fishermen[f].draw();
   }
-
+  
   // console.log(fishCurrentColColor)
-  fish.checkGameCollision();
+  let collisions = fish.checkGameCollision();
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    salmon.checkGameCollision();
+    collisions.add(salmon.checkGameCollision());
   }
+  
+  // vibration: if any fish collided, and able to vibrate, send a 1,1
+  if (collisions.mag() > 0 && (millis() - lastVibration) > VIBRATION_COOLDOWN) {
+    lastVibration = millis();
+    serial.writeLine("0,1");
+  }
+  
   // FISH LADDER PLACEMENT
   // if L is pressed and cooldown ok
 
@@ -291,26 +301,37 @@ function draw() {
     
   }
   
+  let deathsThisFrame = 0;
+  
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     salmon.checkOOB();
-    salmon.checkDead();
+    deathsThisFrame += salmon.checkDead();
     salmon.render();
     salmon.drawSprite();
     salmon.turn();
     salmon.update();
-    if (salmon._isDead && salmon._firstDeath) {
-      fishAlive -= 1;
-      salmon.deathTrackLED();
-    }
+    // if (salmon._isDead && salmon._firstDeath) {
+    //   fishAlive -= 1;
+    //   salmon.deathTrackLED();
+    // }
   }  
   
   fish.checkOOB();
-  fish.checkDead();
-  if (fish._isDead && fish._firstDeath) {
-    fishAlive -= 1;
-    fish.deathTrackLED();
+  deathsThisFrame += fish.checkDead();
+  // if (fish._isDead && fish._firstDeath) {
+  //   fishAlive -= 1;
+  //   fish.deathTrackLED();
+  // }
+  
+  if (deathsThisFrame > 0) {
+    fishAlive -= deathsThisFrame;
+    if (fishAlive != lastFishAlive) {
+      serial.writeLine(fishAlive + ",1");
+      // console.log(fishAlive + ",1")
+    }
   }
+  
   
   fish.render();
   fish.drawSprite();
@@ -430,7 +451,7 @@ function input() {
 
 function output() {
   if (serial.isOpen()) {
-    serial.writeLine(fishAlive);
+    serial.writeLine(fishAlive + ",0");
   }
 }
 
