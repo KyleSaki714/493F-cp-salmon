@@ -64,6 +64,7 @@ let salmonSprite_sick;
 let salmonSprite_dead;
 let scrub_sound;
 let fishermanIm;
+let gravestoneSprite;
 
 let gameStarted;
 let isGameOver;
@@ -76,6 +77,7 @@ function preload() {
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
   salmonSprite_dead = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
+  gravestoneSprite = loadImage("resources/salmongrave2.png");
 }
 
 function spawnSalmon() {
@@ -88,7 +90,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
     _fishes.push(curFish);
   }
 }
@@ -119,7 +121,7 @@ function setup() {
   factSound = createAudio('Quiz-Buzzer01-1.mp3');
 
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
   spawnSalmon();
   console.log(_fishes);
   pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
