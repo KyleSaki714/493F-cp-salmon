@@ -470,19 +470,25 @@ function handleSerialSalmon(valuesString) {
   let joyx_normneg = (joystickX * 2.0) - 1.0;
   let joyy_normneg = (joystickY * 2.0) - 1.0;
   
-  // NOT USING THE X AXIS? 
-  // if (SERIAL_CONNECTED && joyx_normneg) {
-  //   console.log("joyx_normneg " + joyx_normneg);
-  //   _isTurningMotion = true;
-  //   let rotValue = joyx_normneg * SALMON_TURNRATE;
-  //   fish.setRotation(rotValue)
-  // }
+  // NOT USING THE X AXIS? JUST TESTING IT FOR NOW 
+  if (SERIAL_CONNECTED && abs(joyx_normneg) > 0.1) {
+    console.log("joyx_normneg " + joyx_normneg);
+    
+    let force = p5.Vector.fromAngle(fish.heading);
+    force.mult(joyx_normneg * 0.1);
+    fish.vel.add(force);
+    
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.vel.add(force);
+    }
+  }
   
   // JOYSTICK Y AXIS: SALMON ROTATE
   if (SERIAL_CONNECTED && joyy_normneg && abs(joyy_normneg) > 0.1) { // drift
     console.log("joyy_normneg " + joyy_normneg);
     _isTurningMotion = true;
-    let rotValue = joyx_normneg * SALMON_TURNRATE;
+    let rotValue = joyy_normneg * SALMON_TURNRATE;
     fish.setRotation(rotValue)
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
@@ -490,7 +496,7 @@ function handleSerialSalmon(valuesString) {
     }
   }
   // both joysticks are in 0 position
-  if (SERIAL_CONNECTED && !joyx_normneg && !joyy_normneg) {
+  if (SERIAL_CONNECTED && abs(joyy_normneg) < 0.1 && abs(joyx_normneg) < 0.1) {
     _isTurningMotion = false;
   }
   if (SERIAL_CONNECTED && joystickBtn) {
