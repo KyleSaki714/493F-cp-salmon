@@ -50,6 +50,7 @@ const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
 let fishAlive = 7;
+let mainFishCaught = false;
 
 // pollution
 let pollution = [];
@@ -136,7 +137,7 @@ function setup() {
   pollution.push(new Pollution(2600, 200, 60));
 
   // fishermen
-  fishermen.push(new Fisherman(400, 50, fishermanIm));
+  fishermen.push(new Fisherman(400, 50, fishermanIm, salmonSprite_dead));
 
   gameStarted = false;
   isGameOver = false;
@@ -232,7 +233,9 @@ function draw() {
   }
 
   // scroll fish and pollution
-  fish.scrollFishX(scrollval);
+  if (!mainFishCaught) {
+    fish.scrollFishX(scrollval);
+  }
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     salmon.scrollFishX(scrollval);
@@ -288,10 +291,15 @@ function draw() {
   }
 
   // console.log(fishCurrentColColor)
-  fish.checkGameCollision();
+  if (!mainFishCaught) {
+    mainFishCaught = fish.checkGameCollision(fishermen[0]);
+  }
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    salmon.checkGameCollision();
+    let caught = salmon.checkGameCollision(fishermen[0]);
+    if (caught) {
+      salmon.splice(i); // remove this fish... now going to the fisherman
+    }
   }
   // FISH LADDER PLACEMENT
   // if L is pressed and cooldown ok
@@ -316,25 +324,37 @@ function draw() {
     }
   }  
 
-  if (_fishes[0].isDead() && _fishes[1].isDead() &&
-    _fishes[2].isDead() && _fishes[3].isDead() &&
-    _fishes[4].isDead() && _fishes[5].isDead())
-    {
-    // All salmon are dead
+  // if (_fishes[0].isDead() && _fishes[1].isDead() &&
+  //   _fishes[2].isDead() && _fishes[3].isDead() &&
+  //   _fishes[4].isDead() && _fishes[5].isDead())
+  //   {
+  //   // All salmon are dead
+  //   isGameOver = true;
+  // }
+  if (_fishes.length == 0) {
     isGameOver = true;
+  } else {
+    isGameOver = true; // default to true unless we find a fish still alive
+    for (let f = 0; f < _fishes.length; f++) {
+      if (!_fishes[f].isDead()) {
+        isGameOver = false;
+      }
+    }
   }
   
-  fish.checkOOB();
-  fish.checkDead();
-  if (fish._isDead && fish._firstDeath) {
-    fishAlive -= 1;
-    fish.deathTrackLED();
+  if (!mainFishCaught) {
+    fish.checkOOB();
+    fish.checkDead();
+    if (fish._isDead && fish._firstDeath) {
+      fishAlive -= 1;
+      fish.deathTrackLED();
+    }
+    
+    fish.render();
+    fish.drawSprite();
+    fish.turn();
+    fish.update();
   }
-  
-  fish.render();
-  fish.drawSprite();
-  fish.turn();
-  fish.update();
 
   if (-300 > _river.pos.x) {
    factsArr[0].draw();
