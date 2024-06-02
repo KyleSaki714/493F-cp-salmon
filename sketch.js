@@ -37,8 +37,11 @@ let _lastPosBrush = 0; // marker 1
 
 // fishladder
 const FISHLADDER_COOOLDOWNTIME = 500; // default 2500?
+const HAMMER_BUFFERTIME = 3000;
 let _fishLadders = [];
 let _lastFishLadderPlacedTime = -FISHLADDER_COOOLDOWNTIME;
+let _hammerPressed = false;
+let _lastHammerPress = 0;
 
 // other globals
 let _river;
@@ -69,8 +72,10 @@ let salmonSprite_sick;
 let salmonSprite_dead;
 let scrub_sound;
 let fishermanIm;
+let gravestoneSprite;
 
 let gameStarted;
+let isGameOver;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -80,6 +85,7 @@ function preload() {
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
   salmonSprite_dead = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
+  gravestoneSprite = loadImage("resources/salmongrave2.png");
 }
 
 function spawnSalmon() {
@@ -92,7 +98,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
     _fishes.push(curFish);
   }
 }
@@ -123,7 +129,7 @@ function setup() {
   factSound = createAudio('Quiz-Buzzer01-1.mp3');
 
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
   spawnSalmon();
   console.log(_fishes);
   pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
@@ -138,6 +144,7 @@ function setup() {
   fishermen.push(new Fisherman(400, 50, fishermanIm));
 
   gameStarted = false;
+  isGameOver = false;
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -199,7 +206,7 @@ function draw() {
   input();
   output();
 
-  let scrollval = -0.5; // default -0.5?
+  let scrollval = -0.7; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -230,10 +237,10 @@ function draw() {
   }
 
   // scroll fish and pollution
-  fish.scrollX(scrollval);
+  fish.scrollFishX(scrollval);
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    salmon.scrollX(scrollval);
+    salmon.scrollFishX(scrollval);
   }
   for (let p = 0; p < pollution.length; p++) {
     pollution[p].scrollX(scrollval);
@@ -246,6 +253,12 @@ function draw() {
     _lastPosHammer = pos;
     let rot = marker0.rotation;
     _lastRotHammer = rot;
+    t = millis();
+    if ((t - _lastHammerPress) > HAMMER_BUFFERTIME && (t - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+      _lastFishLadderPlacedTime = millis()
+      _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+      
+    }
     // _lastPosHammer.x = width - pos.x;
   }
   if (marker2.present) {
@@ -312,6 +325,14 @@ function draw() {
     salmon.turn();
     salmon.update();
   }  
+
+  if (_fishes[0].isDead() && _fishes[1].isDead() &&
+    _fishes[2].isDead() && _fishes[3].isDead() &&
+    _fishes[4].isDead() && _fishes[5].isDead())
+    {
+    // All salmon are dead
+    isGameOver = true;
+  }
   
   fish.checkOOB();
   deathsThisFrame += fish.checkDead();
@@ -359,7 +380,46 @@ function draw() {
   factsArr[2].scrollX(scrollval);
   factsArr[3].scrollX(scrollval);
 
+  // Game over screen
+  if (isGameOver) {
+    fill(color("#ff5252"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("You lose!", 300, 200, 500, 300);
+    textSize(20);
+    text("All salmons died on their way to spawn", 300, 300, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#ff5252"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
+    text("Press 'a' to retry", 300, 400, 300, 300);
+    image(salmonSprite_dead, 530, 145);
+    
+    // Restart game on 'a' press
+    if (keyIsDown(65)) {
+      location.reload();
+    }
+  }
 
+  // Reached end of game (end screen)
+  if (_river.pos.x < (-_river.image.width + width)) {
+    // this.pos = (-this.backdrop.width + width);
+    fill(color("#00b4d8"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("You win!", 300, 300, 500, 300);
+    textSize(20);
+    text("Your salmon successfully made it to spawn", 300, 400, 300, 300);
+    text("and is ready to lay eggs for the new generation!", 300, 450, 300, 300);
+  }
   
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));
@@ -565,9 +625,9 @@ function handleSerialScrub(valuesString) {
  * @param {String[]} valuesString 
  */
 function handleSerialHammer(valuesString) {
-  // console.log(values);
-  const values = valuesString.split(',');
-
+  if (parseInt(valueString)  == 1) { // 1 for hammer press
+    _lastHammerPress = millis();
+  }
 }
 
 function onSerialDataReceived(eventSender, newData) {
