@@ -8,7 +8,7 @@ const START_ROD_LENGTH = 100;
 
 class Fisherman extends Shape{
   
-  constructor(x, y, sprite) {
+  constructor(x, y, sprite, deadFishSprite) {
     super(x, y, 50, 50);
     this.sprite = sprite;
     this.sprite.resize(110, 110);
@@ -17,6 +17,7 @@ class Fisherman extends Shape{
     this.hookPos = createVector(this.xpos + this.sprite.width / 2, this.ypos - this.sprite.height / 4 + START_ROD_LENGTH);
     this.rodLength = START_ROD_LENGTH;
     this.stopped = false;
+    this.fishBox = 0; // count how many fishes caught
   }
 
   draw() {
@@ -43,6 +44,11 @@ class Fisherman extends Shape{
     fill('purple');
     noStroke();
     circle(this.hookPos.x, this.hookPos.y, 10);
+    // NOTE: change 15 based on where we want the fish placed
+    // 3 is for stacking 
+    for (let f = 0; f < this.fishBox; f++) {
+      image(this.deadFishSprite, this.xpos - 15, this.ypos + 3 * f);
+    }
     pop();
   }
 
@@ -85,5 +91,18 @@ class Fisherman extends Shape{
     let xOff = mouseX - this.xpos;
     let yOff = mouseY - this.ypos;
     console.log(xOff + " " + yOff + ": " + get(mouseX, mouseY));
+  }
+
+  overlapsFish(fish) {
+    // based on https://stackoverflow.com/a/4098512
+    let reel_in = !(this.getRight() < fish.pos.x || 
+             this.getBottom() < fish.pos.y || 
+             this.x > fish.getRight() || 
+             this.y > fish.getBottom());
+
+    if (reel_in) {
+      fishBox++
+    }
+    return reel_in;
   }
 }
