@@ -173,11 +173,26 @@ class Fish extends Ship {
     }
     
     drawSprite() {
-      push()
-      imageMode(CENTER)
+      push();
+      imageMode(CENTER);
       translate(this.pos.x, this.pos.y);
       rotate(this.heading);
-      image(this.currentSprite, 0,0)
-      pop()
+      image(this.currentSprite, 0,0);
+      // this.drawBoundingBox();
+      pop();
     }
+
+    scrollFishX(scrollval) {
+      if (!this.snatched) {
+        this.scrollX(scrollval)
+      }
+    }
+    // drawBoundingBox() {
+    //   push();
+    //   rectMode(CENTER);
+    //   stroke(46, 100, 85);
+    //   noFill();
+    //   square(0, 0, this.sprite.width);
+    //   pop();
+    // }
   }
