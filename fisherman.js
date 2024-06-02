@@ -1,5 +1,5 @@
-const rodMin = 80;
-const rodMax = 300;
+const ROD_MAX = 300;
+const ROD_MIN = 80;
 const COLLISIONCOLOR_FISHERMAN = [153, 97, 72, 255];
 const X_COLLISION_OFFSET_FISHERMAN = 16;
 const Y_COLLISION_OFFSET_FISHERMAN = 50;
@@ -22,7 +22,7 @@ class Fisherman extends Shape{
   draw() {
     if (!this.stopped) {
       let hookHitGrass = this.checkHookCollisionGrass();
-      if (this.rodLength <= rodMin || this.rodLength >= rodMax) {
+      if (this.rodLength <= ROD_MIN || this.rodLength >= ROD_MAX) {
         this.rodSpeed *= -1;
       }
       this.rodLength += this.rodSpeed;
@@ -32,7 +32,7 @@ class Fisherman extends Shape{
         this.hookPos.y -= 10;
       }
     } else {
-      this.hookPos.x = this.xpos + + this.sprite.width / 2;
+      this.hookPos.x = this.xpos + this.sprite.width / 2;
     }
     
     push();
