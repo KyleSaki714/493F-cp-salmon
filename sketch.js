@@ -202,7 +202,7 @@ function draw() {
   input();
   output();
 
-  let scrollval = -0.5; // default -0.5?
+  let scrollval = -0.7; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -408,6 +408,22 @@ function draw() {
     if (keyIsDown(65)) {
       location.reload();
     }
+  }
+
+  // Reached end of game (end screen)
+  if (_river.pos.x < (-_river.image.width + width)) {
+    // this.pos = (-this.backdrop.width + width);
+    fill(color("#00b4d8"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("You win!", 300, 300, 500, 300);
+    textSize(20);
+    text("Your salmon successfully made it to spawn", 300, 400, 300, 300);
+    text("and is ready to lay eggs for the new generation!", 300, 450, 300, 300);
   }
   
   // text(10, 10, frameRate());
