@@ -46,6 +46,7 @@ const SALMON_BOOSTRATE = 2;
 const SALMON_SLOWDOWN_DEBUFF = 0.5; // 70% boost reduction when polluted
 let fish;
 let _fishes = [];
+let fishAlive = 7;
 
 // pollution
 let pollution = [];
@@ -63,6 +64,10 @@ let salmonSprite_sick;
 let salmonSprite_dead;
 let scrub_sound;
 let fishermanIm;
+let gravestoneSprite;
+
+let gameStarted;
+let isGameOver;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -72,6 +77,7 @@ function preload() {
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
   salmonSprite_dead = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
+  gravestoneSprite = loadImage("resources/salmongrave2.png");
 }
 
 function spawnSalmon() {
@@ -84,7 +90,7 @@ function spawnSalmon() {
     let y = SALMON_SPAWNPOINT_Y + SPAWNINGRADIUS * Math.sin(THETA);
     let spawnPos = createVector(x, y);
     
-    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+    let curFish = new Fish(10, color("salmon"), spawnPos, SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
     _fishes.push(curFish);
   }
 }
@@ -115,7 +121,7 @@ function setup() {
   factSound = createAudio('Quiz-Buzzer01-1.mp3');
 
   // one middle fish
-  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead);
+  fish = new Fish(10, color("salmon"), createVector(SALMON_SPAWNPOINT_X, SALMON_SPAWNPOINT_Y), SALMON_TURNRATE, SALMON_BOOSTRATE, SALMON_SLOWDOWN_DEBUFF, salmonSprite_normal, salmonSprite_sick, salmonSprite_dead, gravestoneSprite);
   spawnSalmon();
   console.log(_fishes);
   pollution.push(new Pollution(500, 180, 70)); // array of pollution blobs 
@@ -129,6 +135,8 @@ function setup() {
   // fishermen
   fishermen.push(new Fisherman(400, 50, fishermanIm));
 
+  gameStarted = false;
+  isGameOver = false;
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -146,6 +154,38 @@ function setup() {
 
 
 function draw() {
+  // Start menu
+  if (!gameStarted) {
+    fill(color("#00b4d8"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("SALMON SAVIOR", 300, 200, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#00b4d8"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
+    textSize(20);
+    text("Press 'a' to start", 300, 400, 300, 300);
+    image(salmonSprite_normal, 50, 50);
+    image(salmonSprite_normal, 300, 300);
+    image(salmonSprite_normal, 90, 250);
+    image(salmonSprite_normal, 75, 400);
+    image(salmonSprite_normal, 500, 150);
+    image(salmonSprite_sick, 480, 403);
+    image(salmonSprite_dead, 530, 50);
+
+
+
+    if (keyIsDown(65)) { // press a to start
+      gameStarted = true;
+    }
+  }
+  else {
+  
   rect(0, 0, 100, 50);
   // beholder updates before all code in draw()
   marker0 = p5beholder.getMarker(0);
@@ -156,6 +196,7 @@ function draw() {
   background("lightblue");
     
   input();
+  output();
 
   let scrollval = -0.5; // default -0.5?
   // stop scrolling river
@@ -260,10 +301,27 @@ function draw() {
     salmon.drawSprite();
     salmon.turn();
     salmon.update();
+    if (salmon._isDead && salmon._firstDeath) {
+      fishAlive -= 1;
+      salmon.deathTrackLED();
+    }
   }  
+
+  if (_fishes[0].isDead() && _fishes[1].isDead() &&
+    _fishes[2].isDead() && _fishes[3].isDead() &&
+    _fishes[4].isDead() && _fishes[5].isDead())
+    {
+    // All salmon are dead
+    isGameOver = true;
+  }
   
   fish.checkOOB();
   fish.checkDead();
+  if (fish._isDead && fish._firstDeath) {
+    fishAlive -= 1;
+    fish.deathTrackLED();
+  }
+  
   fish.render();
   fish.drawSprite();
   fish.turn();
@@ -298,10 +356,34 @@ function draw() {
   factsArr[2].scrollX(scrollval);
   factsArr[3].scrollX(scrollval);
 
-
+  // Game over screen
+  if (isGameOver) {
+    fill(color("#ff5252"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("You lose!", 300, 200, 500, 300);
+    textSize(20);
+    text("All salmons died on their way to spawn", 300, 300, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#ff5252"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
+    text("Press 'a' to retry", 300, 400, 300, 300);
+    image(salmonSprite_dead, 530, 145);
+    
+    // Restart game on 'a' press
+    if (keyIsDown(65)) {
+      location.reload();
+    }
+  }
   
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));
+  }
 }
 
 function input() {
@@ -376,6 +458,12 @@ function input() {
   // 'spacebar'
   if (keyIsDown(32)){
     handleSerialScrub("0.9");
+  }
+}
+
+function output() {
+  if (serial.isOpen()) {
+    serial.writeLine(fishAlive);
   }
 }
 

@@ -5,7 +5,7 @@ const SALMON_POISON_DEAD_TIME = 1500; // after this amount of ms, ded
 
 class Fish extends Ship {
 
-    constructor(size, color, startingPos, turnRate, boostRate, boostRateDebuff, sprite, spriteSick, spriteDead) {
+    constructor(size, color, startingPos, turnRate, boostRate, boostRateDebuff, sprite, spriteSick, spriteDead, spriteGrave) {
       super(size, color, startingPos, boostRate, boostRateDebuff);
       this._id = 100 + Math.trunc(Math.random() * 900);
       this._swimming = false;
@@ -13,16 +13,19 @@ class Fish extends Ship {
       this._swimCooldown = 900;
       this._poisonedTimeStart = undefined;
       this._isDead = false;
+      this._firstDeath = true;
       this._turnRate = turnRate;
       this._polluted = false;
       this._pollutedBoostRate = boostRate * boostRateDebuff; // reduction in boost
       this.sprite = sprite;  
       this.spriteSick = spriteSick;
       this.spriteDead = spriteDead;
+      this.spriteGrave = spriteGrave;
       const imageSize = 0.75;
       this.sprite.resize(this.sprite.width * imageSize, this.sprite.height * imageSize)
       this.spriteSick.resize(this.spriteSick.width * imageSize, this.spriteSick.height * imageSize)
       this.spriteDead.resize(this.spriteDead.width * imageSize, this.spriteDead.height * imageSize)
+      //this.spriteGrave.resize(0, 10)
       
       this.currentSprite = this.sprite;
       // FUTURE: create collision box
@@ -100,7 +103,19 @@ class Fish extends Ship {
           this._turnRate = 0;
           this.changeSpriteDead();
         }
+      } else { // deadge
+        if (this._poisonedTimeStart) {
+          let secondsAfterDied = (millis() - this._poisonedTimeStart);
+          if (secondsAfterDied > 15000) {
+            // Gravestone
+            this.currentSprite = this.spriteGrave;
+          }
+        }
       }
+    }
+
+    deathTrackLED() {
+      this._firstDeath = false;
     }
     
     /**
@@ -173,26 +188,22 @@ class Fish extends Ship {
     }
     
     drawSprite() {
-      push();
-      imageMode(CENTER);
+      push()
+      imageMode(CENTER)
       translate(this.pos.x, this.pos.y);
       rotate(this.heading);
-      image(this.currentSprite, 0,0);
-      // this.drawBoundingBox();
-      pop();
+      image(this.currentSprite, 0,0)
+      pop()
     }
 
+    isDead() {
+      return this._isDead;
+    }
     scrollFishX(scrollval) {
       if (!this.snatched) {
         this.scrollX(scrollval)
       }
     }
-    // drawBoundingBox() {
-    //   push();
-    //   rectMode(CENTER);
-    //   stroke(46, 100, 85);
-    //   noFill();
-    //   square(0, 0, this.sprite.width);
-    //   pop();
-    // }
   }
+
+    
