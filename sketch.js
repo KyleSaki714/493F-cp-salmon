@@ -188,10 +188,10 @@ function draw() {
   }
 
   // scroll fish and pollution
-  fish.scrollX(scrollval);
+  fish.scrollFishX(scrollval);
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
-    salmon.scrollX(scrollval);
+    salmon.scrollFishX(scrollval);
   }
   for (let p = 0; p < pollution.length; p++) {
     pollution[p].scrollX(scrollval);
