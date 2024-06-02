@@ -120,42 +120,49 @@ class Fish extends Ship {
     
     /**
      * Singular method to check for game collision
+     * ONLY RETURNS TRUE IF FISHERMAN FINISHED FISHING
      */
-    checkGameCollision() {
-      if (this.checkColorCollisionGrassOrDam()) {
-        console.log("Salmon #" + this._id + " said: \"Bonk\"");
-    
-        // Stuck between edge and grass
-       if (this.pos.x < 10) {
-        this.pos.x = 50;
-        this.pos.y = 200;
-    
-         // If spawned inside grass, move salmon outside of grass
-         while (this.checkColorCollisionGrassOrDam()) {
-          this.pos.y += 10;
-         }
-        }
-        this.stop();
-        this.backup();
-      }
-      let fishCurrentColor = this.getCurrentFishCollisionColor();
-      if (this.checkColorCollisionPollution(fishCurrentColor)) {
-        console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
-        this._polluted = true;
-        this.setBoostRate(this._pollutedBoostRate);
-        this.changeSpriteSick();
-        this._poisonedTimeStart = millis();
-      }
+    checkGameCollision(fisherman) {
+      if (this.snatched) { // skip the other collision checks 
+        return fisherman.contains();
 
-      if (this.checkColorCollisionHook(fishCurrentColor)) {
-        console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
-        push();
-        translate(this.pos.x, this.pos.y);
-        rotate(this.heading + PI/4);
-        pop();
-        this.vel = createVector(0, -4);
-        this.snatched = true;
-        this.boosting(false);
+      } else {
+        if (this.checkColorCollisionGrassOrDam()) {
+          console.log("Salmon #" + this._id + " said: \"Bonk\"");
+      
+          // Stuck between edge and grass
+         if (this.pos.x < 10) {
+          this.pos.x = 50;
+          this.pos.y = 200;
+      
+           // If spawned inside grass, move salmon outside of grass
+           while (this.checkColorCollisionGrassOrDam()) {
+            this.pos.y += 10;
+           }
+          }
+          this.stop();
+          this.backup();
+        }
+        let fishCurrentColor = this.getCurrentFishCollisionColor();
+        if (this.checkColorCollisionPollution(fishCurrentColor)) {
+          console.log("Salmon #" + this._id + " said: \"OUCH!!!\"");
+          this._polluted = true;
+          this.setBoostRate(this._pollutedBoostRate);
+          this.changeSpriteSick();
+          this._poisonedTimeStart = millis();
+        }
+  
+        if (this.checkColorCollisionHook(fishCurrentColor)) {
+          console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
+          push();
+          translate(this.pos.x, this.pos.y);
+          rotate(this.heading + PI/4);
+          pop();
+          this.vel = createVector(0, -4);
+          this.snatched = true;
+          this.boosting(false);
+        }
+        return false;
       }
     }
     
@@ -203,6 +210,14 @@ class Fish extends Ship {
       if (!this.snatched) {
         this.scrollX(scrollval)
       }
+    }
+
+    getRight() {
+      return this.pos.x + this.sprite.width;
+    }
+  
+    getBottom() {
+      return this.pos.y + this.sprite.height;
     }
   }
 
