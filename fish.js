@@ -107,10 +107,6 @@ class Fish extends Ship {
       }
       return 0
     }
-
-    deathTrackLED() {
-      this._firstDeath = false;
-    }
     
     /**
      * Singular method to check for game collision.

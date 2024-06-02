@@ -311,18 +311,10 @@ function draw() {
     salmon.drawSprite();
     salmon.turn();
     salmon.update();
-    // if (salmon._isDead && salmon._firstDeath) {
-    //   fishAlive -= 1;
-    //   salmon.deathTrackLED();
-    // }
   }  
   
   fish.checkOOB();
   deathsThisFrame += fish.checkDead();
-  // if (fish._isDead && fish._firstDeath) {
-  //   fishAlive -= 1;
-  //   fish.deathTrackLED();
-  // }
   
   if (deathsThisFrame > 0) {
     fishAlive -= deathsThisFrame;
