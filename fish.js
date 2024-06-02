@@ -149,6 +149,18 @@ class Fish extends Ship {
       }
     }
     
+    joystickAddForce(force) {
+      if (!this.snatched && !this._isDead) {
+        this.vel.add(force);
+      }
+    }
+    
+    joystickSetRotation(rotValue) {
+      if (!this.snatched && !this._isDead) {
+        this.setRotation(rotValue * -1);
+      }
+    }
+    
     turnRight() {
       if (!this.snatched) {
         this.setRotation(this._turnRate);

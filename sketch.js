@@ -476,11 +476,13 @@ function handleSerialSalmon(valuesString) {
     
     let force = p5.Vector.fromAngle(fish.heading);
     force.mult(joyx_normneg * 0.1);
-    fish.vel.add(force);
+    fish.joystickAddForce(force);
     
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
-      salmon.vel.add(force);
+      let forceSalmon = p5.Vector.fromAngle(salmon.heading);
+      forceSalmon.mult(joyx_normneg * 0.1);
+      salmon.joystickAddForce(forceSalmon);
     }
   }
   
@@ -489,10 +491,12 @@ function handleSerialSalmon(valuesString) {
     console.log("joyy_normneg " + joyy_normneg);
     _isTurningMotion = true;
     let rotValue = joyy_normneg * SALMON_TURNRATE;
-    fish.setRotation(rotValue)
+    fish.joystickSetRotation(rotValue)
+
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
-      salmon.setRotation(rotValue);
+      salmon.joystickSetRotation(rotValue);
+      
     }
   }
   // both joysticks are in 0 position
