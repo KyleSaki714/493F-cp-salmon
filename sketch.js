@@ -23,6 +23,7 @@ let _lastSwimAngle = 0; // previous angle a swim was triggered. initially set to
 const SWIM_DIST_THRESH = 2; // how much salmon controller needs to turn to execute a swim. 
 let _isTurningMotion = false; // if the salmon controller is being used to turn.
 let _isTurningKeys = false; // if the a and d keys are being used to turn.
+let joystickBtn = 0;
 
 // beholder.js
 let marker0;
@@ -177,7 +178,7 @@ function draw() {
 
 
 
-    if (keyIsDown(65)) { // press a to start
+    if (keyIsDown(65) || joystickBtn) { // press a to start
       gameStarted = true;
     }
   }
@@ -464,7 +465,7 @@ function handleSerialSalmon(valuesString) {
   const accelerationZ = parseFloat(values[5]);
   const joystickY = parseFloat(values[6]);
   const joystickX = parseFloat(values[7]);
-  const joystickBtn = parseInt(values[8]);
+  joystickBtn = parseInt(values[8]);
 
   // console.log(yaw);
   let joyx_normneg = (joystickX * 2.0) - 1.0;
