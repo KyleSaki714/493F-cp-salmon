@@ -66,6 +66,7 @@ let scrub_sound;
 let fishermanIm;
 
 let gameStarted;
+let isGameOver;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
@@ -133,6 +134,7 @@ function setup() {
   fishermen.push(new Fisherman(400, 50, fishermanIm));
 
   gameStarted = false;
+  isGameOver = false;
 
   _river = new Backdrop(backdropIm);
   _lastPosBrush = createVector(-100, -100);
@@ -302,6 +304,14 @@ function draw() {
       salmon.deathTrackLED();
     }
   }  
+
+  if (_fishes[0].isDead() && _fishes[1].isDead() &&
+    _fishes[2].isDead() && _fishes[3].isDead() &&
+    _fishes[4].isDead() && _fishes[5].isDead())
+    {
+    // All salmon are dead
+    isGameOver = true;
+  }
   
   fish.checkOOB();
   fish.checkDead();
@@ -344,7 +354,30 @@ function draw() {
   factsArr[2].scrollX(scrollval);
   factsArr[3].scrollX(scrollval);
 
-
+  // Game over screen
+  if (isGameOver) {
+    fill(color("#ff5252"));
+    rect(0, 0, 1600, 1000);
+    fill('white');
+    textFont('Verdana');
+    textStyle(BOLD);
+    textSize(80);
+    textAlign(CENTER);
+    text("You lose!", 300, 200, 500, 300);
+    textSize(20);
+    text("All salmons died on their way to spawn", 300, 300, 500, 300);
+    rect(300, 260, 300, 50, 20);
+    fill(color("#ff5252"));
+    rect(300, 260, 270, 30, 20);
+    fill('white');
+    text("Press 'a' to retry", 300, 400, 300, 300);
+    image(salmonSprite_dead, 530, 145);
+    
+    // Restart game on 'a' press
+    if (keyIsDown(65)) {
+      location.reload();
+    }
+  }
   
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));

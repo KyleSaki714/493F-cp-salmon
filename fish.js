@@ -185,4 +185,8 @@ class Fish extends Ship {
       image(this.currentSprite, 0,0)
       pop()
     }
+
+    isDead() {
+      return this._isDead;
+    }
   }
