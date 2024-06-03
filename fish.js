@@ -13,6 +13,7 @@ class Fish extends Ship {
       this._swimCooldown = 900;
       this._poisonedTimeStart = undefined;
       this._isDead = false;
+      this.isRemoveGrave = false;
       this._firstDeath = true;
       this._turnRate = turnRate;
       this._polluted = false;
@@ -110,10 +111,14 @@ class Fish extends Ship {
       } else { // deadge
         if (this._poisonedTimeStart) {
           let secondsAfterDied = (millis() - this._poisonedTimeStart);
-          if (secondsAfterDied > 15000) {
+          if (secondsAfterDied > 8000) {
             // Gravestone
             this.currentSprite = this.spriteGrave;
           }
+          if (this.currentSprite == this.spriteGrave && this.pos.x == 0) {
+            this.removeGrave = true;
+          }
+            
         }
       }
       return 0
@@ -213,16 +218,22 @@ class Fish extends Ship {
     }
     
     drawSprite() {
-      push()
-      imageMode(CENTER)
-      translate(this.pos.x, this.pos.y);
-      rotate(this.heading);
-      image(this.currentSprite, 0,0)
-      pop()
+      if (!this.removeGrave) {
+        push()
+        imageMode(CENTER)
+        translate(this.pos.x, this.pos.y);
+        rotate(this.heading);
+        image(this.currentSprite, 0,0)
+        pop()
+      }
     }
 
     isDead() {
       return this._isDead;
+    }
+
+    isRemoveGrave() {
+      return this.removeGrave;
     }
 
     scrollFishX(scrollval) {

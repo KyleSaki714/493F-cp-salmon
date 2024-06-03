@@ -77,10 +77,12 @@ let gravestoneSprite;
 
 let gameStarted;
 let isGameOver;
+let riverTexture;
+let riverScrollVal = 0;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
-  backdropIm = loadImage("resources/testriver_3012_480_scrolling_balllardlocks.png");
+  backdropIm = loadImage("resources/new_background2.png");
   fishLadderIm = loadImage("resources/fishladder.png");
   salmonSprite_normal = loadImage("resources/salmon.png");
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
@@ -88,6 +90,7 @@ function preload() {
   salmonSprite_dead_fisherman = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
   gravestoneSprite = loadImage("resources/salmongrave2.png");
+  riverTexture = loadImage("resources/rivertexture-ezgif.com-resize(1).jpg");
 }
 
 function spawnSalmon() {
@@ -203,7 +206,10 @@ function draw() {
   marker2 = p5beholder.getMarker(2);
   
   clear();
-  background("lightblue");
+  background(riverTexture);
+  //riverScrollVal -= 1;
+  image(riverTexture, riverScrollVal, 0);
+
     
   input();
   output();
@@ -335,7 +341,7 @@ function draw() {
     let salmon = _fishes[i];
     salmon.checkOOB();
     deathsThisFrame += salmon.checkDead();
-    salmon.render();
+    //salmon.render();
     salmon.drawSprite();
     if (!salmon.isSnatched) {
       salmon.turn();
@@ -375,7 +381,7 @@ function draw() {
   
   if (!mainFishCaught) {
     fish.checkOOB();
-    fish.render();
+    //fish.render();
     fish.drawSprite();
     fish.turn();
     fish.update();
