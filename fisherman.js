@@ -1,10 +1,11 @@
-const ROD_MAX = 300;
+const ROD_MAX = 350;
 const ROD_MIN = 80;
 const COLLISIONCOLOR_FISHERMAN = [153, 97, 72, 255];
 const X_COLLISION_OFFSET_FISHERMAN = 16;
 const Y_COLLISION_OFFSET_FISHERMAN = 50;
 const COLLISIONCOLOR_HOOK = [128, 0, 128, 255];
 const START_ROD_LENGTH = 100;
+const HOOK_SIZE = 50;
 
 class Fisherman extends Shape{
   
@@ -15,15 +16,22 @@ class Fisherman extends Shape{
     this.sprite.resize(110, 110);
     const deadResize = 0.1;
     this.deadFishSprite.resize(this.deadFishSprite.width * deadResize, this.deadFishSprite.height * deadResize);
-    this.rodSpeed = 4;
-    this.speed = 0;
+    this.rodSpeed = 8;
+    this.speed = 2;
     this.hookPos = createVector(this.xpos + this.sprite.width / 2, this.ypos - this.sprite.height / 4 + START_ROD_LENGTH);
     this.rodLength = START_ROD_LENGTH;
     this.stopped = false;
     this.fishBox = 2; // count how many fishes caught
+    this.lastDirSwitch = millis();
+    this.lastFishTime = 0;
   }
 
-  draw() {
+  draw(scrollval) {
+    let t = millis();
+    if (millis() - this.lastDirSwitch > 3000) {
+      this.speed *= -1;
+      this.lastDirSwitch = t;
+    }
     if (!this.stopped) {
       let hookHitGrass = this.checkHookCollisionGrass();
       if (this.rodLength <= ROD_MIN || this.rodLength >= ROD_MAX || hookHitGrass) {
@@ -36,7 +44,6 @@ class Fisherman extends Shape{
         this.hookPos.y -= 10;
         
       }
-    } else {
       this.hookPos.x = this.xpos + this.sprite.width / 2;
     }
     
@@ -47,7 +54,7 @@ class Fisherman extends Shape{
     line(this.xpos + this.sprite.width/2, this.ypos - this.sprite.height/4, this.hookPos.x, this.hookPos.y);
     fill('purple');
     noStroke();
-    circle(this.hookPos.x, this.hookPos.y, 10);
+    circle(this.hookPos.x, this.hookPos.y, HOOK_SIZE / 4);
     // NOTE: change 15 based on where we want the fish placed
     // 3 is for stacking 
     for (let f = 0; f < this.fishBox; f++) {
@@ -111,4 +118,6 @@ class Fisherman extends Shape{
     }
     return reel_in;
   }
+
+  
 }

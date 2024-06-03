@@ -77,12 +77,14 @@ class Fish extends Ship {
       return grass || dam;
     }
 
-    checkColorCollisionHook(fishCurrentColColor) {
-      let hook = fishCurrentColColor[0] === COLLISIONCOLOR_HOOK[0] && 
-              fishCurrentColColor[1] === COLLISIONCOLOR_HOOK[1] && 
-              fishCurrentColColor[2] === COLLISIONCOLOR_HOOK[2] &&
-              fishCurrentColColor[3] === COLLISIONCOLOR_HOOK[3];
-      return hook;
+    checkCollisionHook(fisherman) {
+      let t = millis();
+      if (t - fisherman.lastFishTime > 400) {
+        let fishToHook = this.pos.copy().sub(fisherman.hookPos);
+        fisherman.lastFishTime = t;
+        return fishToHook.mag() < HOOK_SIZE;
+      }
+      return false;
     }
     
     // returns 1 if the fish is suddenly dead. after that, 
@@ -155,7 +157,7 @@ class Fish extends Ship {
           this.changeSpriteSick();
           this._poisonedTimeStart = millis();
           collisions[1] = 1;
-        } else if (this.checkColorCollisionHook(fishCurrentColor)) {
+        } else if (this.checkCollisionHook(fisherman)) {
           console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
           push();
           translate(this.pos.x, this.pos.y);

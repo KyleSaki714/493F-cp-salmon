@@ -73,6 +73,8 @@ class Shape {
 class Circle extends Shape {
   constructor(x, y, diameter, fillColor) {
     super(x, y, diameter, diameter, fillColor);
+    this.lastShake = 0;
+    this.randVar = 0;
   }
 
   containsCircle(otherCircle) {
@@ -89,7 +91,10 @@ class Circle extends Shape {
     push();
     noStroke();
     fill(this.fillColor);
-    ellipse(this.xpos, this.ypos, this.width);
+    if (millis( ) - this.lastShake > 100) {
+      this.randVar = random(0, 2)
+    }
+    ellipse(this.xpos + this.randVar, this.ypos + this.randVar, this.width);
     pop();
   }
 }

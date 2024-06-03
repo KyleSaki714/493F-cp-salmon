@@ -208,7 +208,7 @@ function draw() {
   input();
   output();
 
-  let scrollval = -0.7; // default -0.5?
+  let scrollval = -1; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -293,7 +293,7 @@ function draw() {
   for (let f = 0; f < fishermen.length; f++) {
     fishermen[f].checkColorCollisionGrass(scrollval);
     fishermen[f].scrollX(fishermen[f].getSpeed());
-    fishermen[f].draw();
+    fishermen[f].draw(scrollval);
   }
   
   // console.log(fishCurrentColColor)
