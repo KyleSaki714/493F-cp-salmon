@@ -97,8 +97,7 @@ class Fish extends Ship {
         let fishCurrentColor = this.getCurrentFishCollisionColor();
         
         let squashed = this.checkColorCollisionGrassOrDam(fishCurrentColor) && this.pos.x < 10;
-        
-        if (pollutionPoisoned || squashed) {
+        if (pollutionPoisoned || squashed || this.snatched) {
           console.log("Salmon #" + this._id + " is DED");
           this._isDead = true;
           this.boostRate = 0;
