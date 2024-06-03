@@ -107,7 +107,8 @@ function spawnSalmon() {
 
 function setup() {
   p5beholder.prepare();
-  createCanvas(640, 480); // small canvas so it doesnt lag
+  // createCanvas(640, 480); // small canvas so it doesnt lag
+  createCanvas(854, 480); // small canvas so it doesnt lag
   rectMode(CENTER);
 
   // spawnpoint declarations are init in setup because height and width of canvas is variable.
@@ -203,7 +204,7 @@ function draw() {
   marker2 = p5beholder.getMarker(2);
   
   clear();
-  background("lightblue");
+  background(color("#00b4d8"));
     
   input();
   output();
@@ -225,16 +226,13 @@ function draw() {
   if (_fishLadders.length > 0) {
     for (let i = 0; i < _fishLadders.length; i++) {
       let fl = _fishLadders[i];
-      // console.log(_fishLadders)
-      if (fl != undefined) {
-        // delete if goes past canvas
-        if (fl.pos.x < 0 - fl.image.width) {
-          _fishLadders[i] = undefined;
-          // console.log("fishladder " + i + " deleted");
-        }
-        fl.scrollX(scrollval);
-        fl.render();
+      
+      // delete if goes past canvas
+      if (fl.pos.x < 0 - fl.image.width) {
+        _fishLadders.splice(i, 1);
       }
+      fl.scrollX(scrollval);
+      fl.render();
     }
   }
 
@@ -257,12 +255,18 @@ function draw() {
     _lastPosHammer = pos;
     let rot = marker0.rotation;
     _lastRotHammer = rot;
-    t = millis();
-    if ((t - _lastHammerPress) > HAMMER_BUFFERTIME && (t - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
-      _lastFishLadderPlacedTime = millis()
-      _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+    // t = millis();
+    // if (keyIsDown(74) && Math.abs(t - _lastHammerPress) > HAMMER_BUFFERTIME && Math.abs(t - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+    //   // console.log(Math.abs(t - _lastHammerPress))
+    //   _lastFishLadderPlacedTime = millis()
+    //   if (_fishLadders.length > 2) {
+    //     // console.log("before: " + _fishLadders);
+    //     _fishLadders.splice(0, 1);
+    //     // console.log("after: " + _fishLadders);
+    //   }
+    //   _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
       
-    }
+    // }
     // _lastPosHammer.x = width - pos.x;
   }
   if (marker2.present) {
@@ -308,7 +312,7 @@ function draw() {
     let collisionArray = salmon.checkGameCollision(fishermen[0]);
     let caught = collisionArray[3];
     if (caught) {
-      _fishes.splice(i); // remove this fish... now going to the fisherman
+      _fishes.splice(i, 1); // remove this fish... now going to the fisherman
     } else {
       collisions.add(createVector(collisionArray[0], collisionArray[1], collisionArray[2]));
     }
@@ -318,15 +322,6 @@ function draw() {
   if (collisions.mag() > 0 && (millis() - lastVibration) > VIBRATION_COOLDOWN) {
     lastVibration = millis();
     serial.writeLine("0,1");
-  }
-  
-  // FISH LADDER PLACEMENT
-  // if L is pressed and cooldown ok
-
-  if (keyIsDown(76) && (millis() - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
-    _lastFishLadderPlacedTime = millis()
-    _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
-    
   }
   
   let deathsThisFrame = 0;
@@ -657,7 +652,14 @@ function handleSerialScrub(valuesString) {
  * @param {String[]} valuesString 
  */
 function handleSerialHammer(valuesString) {
-  if (parseInt(valueString)  == 1) { // 1 for hammer press
+  if (parseInt(valuesString)  === 1) { // 1 for hammer press
+    // FISH LADDER PLACEMENT
+    // if L is pressed and cooldown ok
+    
+    if ((millis() - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+      _lastFishLadderPlacedTime = millis()
+      _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+    }
     _lastHammerPress = millis();
   }
 }

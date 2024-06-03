@@ -71,7 +71,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 #define BLUEPIN A0
 
 // Hammer input
-#define HAMMER_IN 7
+#define HAMMER_IN 5
 
 // software SPI
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
@@ -296,7 +296,7 @@ void scrub() {
 void hammer() {
   Serial.print("hammer:");
   long t = millis();
-  bool btnPressed = false;  // read button state
+  // bool btnPressed = false;  // read button state
   uint8_t read = digitalRead(HAMMER_IN);
   // record switch change
   if (read != lastButtonState) {
@@ -308,7 +308,7 @@ void hammer() {
       buttonState = read;
       if (buttonState == LOW) {
         // pressed down
-        btnPressed = true;
+        // btnPressed = true;
         Serial.print(1); 
       }
     }
@@ -316,7 +316,7 @@ void hammer() {
     Serial.print(0);
   }
   lastButtonState = read;
-  return btnPressed;
+  // return btnPressed;
 }
 
 // Handles vibration and leds for salmon health

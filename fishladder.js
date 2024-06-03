@@ -3,7 +3,7 @@ class FishLadder {
     this.pos = pos;
     // this.pos = createVector(pos.x - (image.width / 2), pos.y - (image.height / 2));
     this.rotation = rot;
-    console.log(degrees(this.rotation));
+    // console.log(degrees(this.rotation));
     this.image = image;
   }
   
