@@ -44,8 +44,8 @@ class Fish extends Ship {
     
     // prevent the fish from swimming until it rests
     canSwim() {
-      return (millis() - this._lastSwimTime) > this._swimCooldown &&
-            !this.isBoosting && !this.snatched;
+      return (millis() - this._lastSwimTime) > this._swimCooldown; //&&
+            //!this.isBoosting && !this.snatched;
     }
 
     getCurrentFishCollisionColor() {
@@ -119,7 +119,7 @@ class Fish extends Ship {
     }
     
     /**
-<<<<<<< HEAD
+     * 
      * Singular method to check for game collision
      * ONLY RETURNS TRUE IF FISHERMAN FINISHED FISHING
 
@@ -130,7 +130,7 @@ class Fish extends Ship {
     checkGameCollision(fisherman) {
       let collisions = [0,0,0,0]
       if (this.snatched) { // skip the other collision checks 
-        collisions[3] = 1;
+        collisions[3] = fisherman.overlapsFish(this);
       } else {
         let fishCurrentColor = this.getCurrentFishCollisionColor();
         if (this.checkColorCollisionGrassOrDam(fishCurrentColor)) {
@@ -223,6 +223,7 @@ class Fish extends Ship {
     isDead() {
       return this._isDead;
     }
+
     scrollFishX(scrollval) {
       if (!this.snatched) {
         this.scrollX(scrollval)
@@ -230,11 +231,19 @@ class Fish extends Ship {
     }
 
     getRight() {
-      return this.pos.x + this.sprite.width;
+      return this.pos.x + this.sprite.width / 2;
     }
   
     getBottom() {
-      return this.pos.y + this.sprite.height;
+      return this.pos.y + this.sprite.height / 2;
+    }
+
+    getLeft() {
+      return this.pos.x - this.sprite.width / 2;
+    }
+    
+    getTop() {
+      return this.pos.y - this.sprite.height / 2;
     }
   }
 
