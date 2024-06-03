@@ -1,7 +1,7 @@
 const COLLISIONCOLOR_GRASS = [24, 62, 12, 255];
 const COLLISIONCOLOR_DAM = [185, 180, 171, 255];
 const COLLISIONCOLOR_POLLUTION = [255, 0, 0, 255];
-const SALMON_POISON_DEAD_TIME = 1500; // after this amount of ms, ded
+const SALMON_POISON_DEAD_TIME = 5000; // after this amount of ms, ded
 
 class Fish extends Ship {
 
@@ -13,6 +13,7 @@ class Fish extends Ship {
       this._swimCooldown = 900;
       this._poisonedTimeStart = undefined;
       this._isDead = false;
+      this.isRemoveGrave = false;
       this._firstDeath = true;
       this._turnRate = turnRate;
       this._polluted = false;
@@ -77,12 +78,27 @@ class Fish extends Ship {
       return grass || dam;
     }
 
-    checkColorCollisionHook(fishCurrentColColor) {
-      let hook = fishCurrentColColor[0] === COLLISIONCOLOR_HOOK[0] && 
-              fishCurrentColColor[1] === COLLISIONCOLOR_HOOK[1] && 
-              fishCurrentColColor[2] === COLLISIONCOLOR_HOOK[2] &&
-              fishCurrentColColor[3] === COLLISIONCOLOR_HOOK[3];
-      return hook;
+    checkCollisionHook(fisherman) {
+      let t = millis();
+      if (t - fisherman.lastFishTime > 400) {
+        let fishToHook = this.pos.copy().sub(fisherman.hookPos);
+        fisherman.lastFishTime = t;
+        return fishToHook.mag() < HOOK_SIZE;
+      }
+      return false;
+    }
+    
+    checkCollisionScrubber(scrubberPos) {
+      let fishToScrubber = this.pos.copy().sub(scrubberPos);
+      return fishToScrubber.mag() < 20;
+    }
+    
+    cleanPollution() {
+      console.log("Salmon #" + this._id + " said: \"CLEAN!!!\"");
+      this._poisonedTimeStart = undefined;
+      this._polluted = false;
+      this.changeSpriteNormal();
+      this.setBoostRate(SALMON_BOOSTRATE);
     }
     
     // returns 1 if the fish is suddenly dead. after that, 
@@ -108,10 +124,14 @@ class Fish extends Ship {
       } else { // deadge
         if (this._poisonedTimeStart) {
           let secondsAfterDied = (millis() - this._poisonedTimeStart);
-          if (secondsAfterDied > 15000) {
+          if (secondsAfterDied > 8000) {
             // Gravestone
             this.currentSprite = this.spriteGrave;
           }
+          if (this.currentSprite == this.spriteGrave && this.pos.x == 0) {
+            this.removeGrave = true;
+          }
+            
         }
       }
       return 0
@@ -155,7 +175,7 @@ class Fish extends Ship {
           this.changeSpriteSick();
           this._poisonedTimeStart = millis();
           collisions[1] = 1;
-        } else if (this.checkColorCollisionHook(fishCurrentColor)) {
+        } else if (this.checkCollisionHook(fisherman)) {
           console.log("Salmon #" + this._id + "said: \"IM FOOD!\"")
           push();
           translate(this.pos.x, this.pos.y);
@@ -211,16 +231,22 @@ class Fish extends Ship {
     }
     
     drawSprite() {
-      push()
-      imageMode(CENTER)
-      translate(this.pos.x, this.pos.y);
-      rotate(this.heading);
-      image(this.currentSprite, 0,0)
-      pop()
+      if (!this.removeGrave) {
+        push()
+        imageMode(CENTER)
+        translate(this.pos.x, this.pos.y);
+        rotate(this.heading);
+        image(this.currentSprite, 0,0)
+        pop()
+      }
     }
 
     isDead() {
       return this._isDead;
+    }
+
+    isRemoveGrave() {
+      return this.removeGrave;
     }
 
     scrollFishX(scrollval) {

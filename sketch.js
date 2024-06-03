@@ -56,6 +56,7 @@ let _fishes = [];
 let fishAlive = 7;
 let mainFishCaught = false;
 let lastFishAlive = fishAlive;
+let currentBrushPos;
 
 // pollution
 let pollution = [];
@@ -77,10 +78,12 @@ let gravestoneSprite;
 
 let gameStarted;
 let isGameOver;
+let riverTexture;
+let riverScrollVal = 0;
 
 function preload() {
   // backdropIm = loadImage("resources/testriver_3012_480_scrolling_dam.png");
-  backdropIm = loadImage("resources/testriver_3012_480_scrolling_balllardlocks.png");
+  backdropIm = loadImage("resources/new_background2.png");
   fishLadderIm = loadImage("resources/fishladder.png");
   salmonSprite_normal = loadImage("resources/salmon.png");
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
@@ -88,6 +91,7 @@ function preload() {
   salmonSprite_dead_fisherman = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
   gravestoneSprite = loadImage("resources/salmongrave2.png");
+  riverTexture = loadImage("resources/rivertexture-ezgif.com-resize(1).jpg");
 }
 
 function spawnSalmon() {
@@ -150,6 +154,7 @@ function setup() {
   isGameOver = false;
 
   _river = new Backdrop(backdropIm);
+  currentBrushPos = createVector(-100, -100);
   _lastPosBrush = createVector(-100, -100);
   _lastPosHammer = createVector(-100, -100);
 
@@ -204,12 +209,15 @@ function draw() {
   marker2 = p5beholder.getMarker(2);
   
   clear();
-  background(color("#00b4d8"));
+  background(riverTexture);
+  //riverScrollVal -= 1;
+  image(riverTexture, riverScrollVal, 0);
+
     
   input();
   output();
 
-  let scrollval = -0.7; // default -0.5?
+  let scrollval = -2; // default -0.5?
   // stop scrolling river
   if (_river.pos.x < (-_river.image.width + width)) {
     // this.pos = (-this.backdrop.width + width);
@@ -269,9 +277,10 @@ function draw() {
     // }
     // _lastPosHammer.x = width - pos.x;
   }
+
   if (marker2.present) {
-    let pos = p5beholder.cameraToCanvasVector(marker2.center);
-    _lastPosBrush = pos;
+    currentBrushPos = p5beholder.cameraToCanvasVector(marker2.center);
+
     // _lastPosBrush.x = width - pos.x;
   }
 
@@ -286,7 +295,7 @@ function draw() {
 
   push();
   fill("white");
-  rect(_lastPosBrush.x, _lastPosBrush.y, 20, 20);
+  rect(currentBrushPos.x, currentBrushPos.y, 20, 20);
   pop();
 
   // draw obstacles
@@ -297,7 +306,7 @@ function draw() {
   for (let f = 0; f < fishermen.length; f++) {
     fishermen[f].checkColorCollisionGrass(scrollval);
     fishermen[f].scrollX(fishermen[f].getSpeed());
-    fishermen[f].draw();
+    fishermen[f].draw(scrollval);
   }
   
   // console.log(fishCurrentColColor)
@@ -305,11 +314,19 @@ function draw() {
   if (!mainFishCaught) {
     mainFishColl = fish.checkGameCollision(fishermen[0]);
     collisions.add(createVector(mainFishColl[0], mainFishColl[1], mainFishColl[2]));
+    // check clean pollution off of fish
+    if (!currentBrushPos.equals(_lastPosBrush) && fish.checkCollisionScrubber(currentBrushPos)) {
+      fish.cleanPollution();
+    }
     mainFishCaught = mainFishColl[3];
   }
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     let collisionArray = salmon.checkGameCollision(fishermen[0]);
+    // check clean pollution off of fish
+    if (!currentBrushPos.equals(_lastPosBrush) && salmon.checkCollisionScrubber(currentBrushPos)) {
+      salmon.cleanPollution();
+    }
     let caught = collisionArray[3];
     if (caught) {
       _fishes.splice(i, 1); // remove this fish... now going to the fisherman
@@ -330,7 +347,7 @@ function draw() {
     let salmon = _fishes[i];
     salmon.checkOOB();
     deathsThisFrame += salmon.checkDead();
-    salmon.render();
+    //salmon.render();
     salmon.drawSprite();
     if (!salmon.isSnatched) {
       salmon.turn();
@@ -370,7 +387,7 @@ function draw() {
   
   if (!mainFishCaught) {
     fish.checkOOB();
-    fish.render();
+    //fish.render();
     fish.drawSprite();
     fish.turn();
     fish.update();
@@ -449,6 +466,7 @@ function draw() {
   // text(10, 10, frameRate());
   // console.log(Math.floor(frameRate()));
   }
+  _lastPosBrush = currentBrushPos;
 }
 
 function input() {
@@ -526,6 +544,22 @@ function input() {
   if (keyIsDown(32)){
     handleSerialScrub("0.9");
   }
+  
+  // 'l' : fishladder
+  
+    // FISH LADDER PLACEMENT
+    // if L is pressed and cooldown ok
+    
+  if ((millis() - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
+    _lastFishLadderPlacedTime = millis()
+    if (_fishLadders.length > 2) {
+        // console.log("before: " + _fishLadders);
+      _fishLadders.splice(0, 1);
+        // console.log("after: " + _fishLadders);
+    }
+    _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
+  }
+  
 }
 
 function output() {
@@ -639,7 +673,7 @@ function handleSerialSalmon(valuesString) {
 function handleSerialScrub(valuesString) {
  let shakeVal = parseFloat(valuesString);
   for (let p = 0; p < pollution.length; p++) {
-    if (pollution[p].brush_collide(_lastPosBrush)) {
+    if (pollution[p].brush_collide(currentBrushPos)) {
       console.log("should attempt to clean!")
       pollution[p].clean_particle(shakeVal);
       break;
@@ -658,6 +692,11 @@ function handleSerialHammer(valuesString) {
     
     if ((millis() - _lastFishLadderPlacedTime) > FISHLADDER_COOOLDOWNTIME) {
       _lastFishLadderPlacedTime = millis()
+      if (_fishLadders.length > 2) {
+        // console.log("before: " + _fishLadders);
+      _fishLadders.splice(0, 1);
+        // console.log("after: " + _fishLadders);
+      }
       _fishLadders.push(new FishLadder(fishLadderIm, _lastPosHammer, _lastRotHammer));
     }
     _lastHammerPress = millis();
