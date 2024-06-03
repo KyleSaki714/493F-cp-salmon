@@ -26,7 +26,7 @@ class Fisherman extends Shape{
   draw() {
     if (!this.stopped) {
       let hookHitGrass = this.checkHookCollisionGrass();
-      if (this.rodLength <= ROD_MIN || this.rodLength >= ROD_MAX) {
+      if (this.rodLength <= ROD_MIN || this.rodLength >= ROD_MAX || hookHitGrass) {
         this.rodSpeed *= -1;
       }
       this.rodLength += this.rodSpeed;
@@ -34,6 +34,7 @@ class Fisherman extends Shape{
       if (hookHitGrass) {
         this.rodLength -= 10;
         this.hookPos.y -= 10;
+        
       }
     } else {
       this.hookPos.x = this.xpos + this.sprite.width / 2;
