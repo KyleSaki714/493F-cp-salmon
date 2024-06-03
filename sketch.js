@@ -85,6 +85,7 @@ function preload() {
   salmonSprite_normal = loadImage("resources/salmon.png");
   salmonSprite_sick = loadImage("resources/salmon_sick.png");
   salmonSprite_dead = loadImage("resources/salmon_dead.png");
+  salmonSprite_dead_fisherman = loadImage("resources/salmon_dead.png");
   fishermanIm = loadImage("resources/fisherman.png");
   gravestoneSprite = loadImage("resources/salmongrave2.png");
 }
@@ -142,7 +143,7 @@ function setup() {
   pollution.push(new Pollution(2600, 200, 60));
 
   // fishermen
-  fishermen.push(new Fisherman(400, 50, fishermanIm, salmonSprite_dead));
+  fishermen.push(new Fisherman(400, 50, fishermanIm, salmonSprite_dead_fisherman));
 
   gameStarted = false;
   isGameOver = false;
@@ -305,9 +306,9 @@ function draw() {
   for (let i = 0; i < _fishes.length; i++) {
     let salmon = _fishes[i];
     let collisionArray = salmon.checkGameCollision(fishermen[0]);
-    let caught = collisionArray[4];
+    let caught = collisionArray[3];
     if (caught) {
-      salmon.splice(i); // remove this fish... now going to the fisherman
+      _fishes.splice(i); // remove this fish... now going to the fisherman
     } else {
       collisions.add(createVector(collisionArray[0], collisionArray[1], collisionArray[2]));
     }
@@ -336,8 +337,12 @@ function draw() {
     deathsThisFrame += salmon.checkDead();
     salmon.render();
     salmon.drawSprite();
-    salmon.turn();
-    salmon.update();
+    if (!salmon.isSnatched) {
+      salmon.turn();
+      salmon.update();
+    } else {
+      console.log("I'm here");
+    }
   }  
 
   // if (_fishes[0].isDead() && _fishes[1].isDead() &&
@@ -502,20 +507,22 @@ function input() {
       salmon.stopTurning();
     }
   }
-  
+  if (!keyIsDown(87)) {
+    fish.stopSwim();
+    for (let i = 0; i < _fishes.length; i++) {
+      let salmon = _fishes[i];
+      salmon.stopSwim();
+    }
+  }
   // "w"
   if (keyIsDown(87)) {
     if (fish.canSwim()) {
       fish.swim();
-    } else {
-      fish.stopSwim();
     }
     for (let i = 0; i < _fishes.length; i++) {
       let salmon = _fishes[i];
       if (salmon.canSwim()) {
         salmon.swim();
-      } else {
-        salmon.stopSwim();
       }
     }
   }
